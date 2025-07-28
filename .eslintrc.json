@@ -3,7 +3,9 @@
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:react/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:react-hooks/recommended",
+    "plugin:prettier/recommended",
+    "prettier"
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": ["@typescript-eslint", "react"],
@@ -17,8 +19,157 @@
     }
   },
   "rules": {
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/consistent-type-definitions": ["error", "type"],
+    "@typescript-eslint/consistent-type-imports": "warn",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-extra-semi": "off",
+    "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-misused-promises": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true
+      }
+    ],
+    "@typescript-eslint/no-var-requires": "off",
+    "@typescript-eslint/unbound-method": "off",
+    "comma-dangle": ["error", "always-multiline"],
+    "curly": "error",
+    "import/no-unresolved": [
+      "error",
+      {
+        "ignore": ["\\.svg\\?react$"]
+      }
+    ],
+    "lodash/import-scope": [2, "method"],
+    "newline-after-var": "error",
+    "newline-before-return": "error",
+    "no-case-declarations": "off",
+    "no-console": "warn",
+    "no-debugger": "error",
+    "no-extra-semi": "off",
+    "no-unused-vars": "off",
+    "no-useless-escape": "off",
+    "padding-line-between-statements": [
+      "error",
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "return"
+      },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": "block-like"
+      },
+      {
+        "blankLine": "always",
+        "prev": "block-like",
+        "next": "*"
+      },
+      {
+        "blankLine": "never",
+        "prev": "case",
+        "next": "default"
+      },
+      {
+        "blankLine": "never",
+        "prev": "case",
+        "next": "case"
+      },
+      {
+        "blankLine": "any",
+        "prev": "*",
+        "next": "break"
+      },
+      {
+        "blankLine": "always",
+        "prev": "*",
+        "next": ["const", "let", "var"]
+      },
+      {
+        "blankLine": "always",
+        "prev": ["const", "let", "var"],
+        "next": "*"
+      },
+      {
+        "blankLine": "any",
+        "prev": ["const"],
+        "next": ["const"]
+      },
+      {
+        "blankLine": "any",
+        "prev": ["let"],
+        "next": ["let"]
+      }
+    ],
+    "quotes": [
+      "error",
+      "single",
+      {
+        "avoidEscape": true
+      }
+    ],
+    "react/display-name": "off",
+    "react/jsx-curly-brace-presence": "warn",
+    "react/jsx-filename-extension": [
+      "error",
+      {
+        "extensions": [".js", ".jsx", ".tsx"]
+      }
+    ],
+    "react/jsx-sort-props": [
+      "error",
+      {
+        "callbacksLast": true,
+        "ignoreCase": false,
+        "reservedFirst": true,
+        "noSortAlphabetically": false,
+        "shorthandFirst": true,
+        "shorthandLast": false
+      }
+    ],
+    "react/jsx-uses-react": "off",
+    "react/prop-types": "off",
     "react/react-in-jsx-scope": "off",
-    "@typescript-eslint/explicit-function-return-type": "off",
-    "@typescript-eslint/no-explicit-any": "warn"
+    "semi": ["error", "always"],
+    "sort-imports": [
+      "error",
+      {
+        "ignoreDeclarationSort": true
+      }
+    ],
+    "unused-imports/no-unused-imports": "error",
+    "unused-imports/no-unused-vars": [
+      "warn",
+      {
+        "vars": "all",
+        "varsIgnorePattern": "^_",
+        "args": "after-used",
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    "import/order": [
+      "error",
+      {
+        "pathGroups": [
+          {
+            "pattern": "react",
+            "group": "builtin",
+            "position": "before"
+          }
+        ],
+        "pathGroupsExcludedImportTypes": [],
+        "groups": [["builtin", "external"], "internal", ["parent", "sibling", "index"]],
+        "newlines-between": "always",
+        "alphabetize": {
+          "order": "asc",
+          "caseInsensitive": true
+        },
+        "warnOnUnassignedImports": true
+      }
+    ]
   }
 }

@@ -3,13 +3,17 @@
   "private": true,
   "version": "0.1.0",
   "type": "module",
+  "engines": {
+    "node": ">=22",
+    "pnpm": ">=9"
+  },
   "scripts": {
-    "dev": "pnpm vite",
-    "build": "pnpm tsc -b && pnpm vite build",
-    "lint": "pnpm eslint .",
-    "preview": "pnpm vite preview",
-    "format": "pnpm prettier --write .",
-    "format:check": "pnpm prettier --check .",
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "preview": "vite preview",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "vitest",
     "prepare": "husky",
     "pre-commit": "pnpm format && pnpm tsc -b && pnpm lint-staged"
@@ -20,7 +24,7 @@
     "tailwindcss": "^4.1.11"
   },
   "devDependencies": {
-		"@tailwindcss/vite": "^4.1.11",
+    "@tailwindcss/vite": "^4.1.11",
     "@eslint/js": "^9.30.1",
     "@testing-library/jest-dom": "^6.6.4",
     "@testing-library/react": "^16.3.0",
