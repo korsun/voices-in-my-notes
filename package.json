@@ -10,7 +10,9 @@
     "preview": "pnpm vite preview",
     "format": "pnpm prettier --write .",
     "format:check": "pnpm prettier --check .",
-    "test": "pnpm vitest"
+    "test": "vitest",
+    "prepare": "husky",
+		"pre-commit": "pnpm format && pnpm tsc -b && pnpm lint-staged"
   },
   "dependencies": {
     "react": "^19.1.0",
