@@ -1,6 +1,7 @@
 # Modern SPA Template
 
 This template provides a modern single-page application setup with:
+
 - Vite as the build tool
 - React 19 with TypeScript
 - ESLint for code linting
@@ -15,11 +16,13 @@ This template provides a modern single-page application setup with:
 ## Getting Started
 
 1. Install dependencies:
+
    ```bash
    pnpm install
    ```
 
 2. Start the development server:
+
    ```bash
    pnpm run dev
    ```
