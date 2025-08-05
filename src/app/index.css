@@ -1,70 +1,67 @@
-@import 'tailwindcss';
+@layer theme, base, components, utilities;
+@import 'tailwindcss/theme.css' layer(theme);
+@import 'tailwindcss/preflight.css' layer(base);
+@import 'tailwindcss/utilities.css' layer(utilities);
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@theme {
+  --color-*: initial;
+  --color-primary: #303030;
+  --color-accent: #ec7160;
+  --color-hover: #da5745;
+  --color-error: #d82700;
+  --color-white: #ffffff;
+  --color-gray1: #505050;
+  --color-gray2: #898989;
+  --color-gray3: #e7e7e7;
+  --color-gray4: #f6f6f6;
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+  --spacing-4: 1rem;
+  --spacing-8: 2rem;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  --font-sans: 'Inter', sans-serif;
+
+  --radius-custom: 0.5rem;
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  html {
+    @apply font-sans text-primary;
   }
-  a:hover {
-    color: #747bff;
+}
+
+@layer components {
+  /* Heading 1: 26px / 31px → 1.625rem / 1.9375rem */
+  .heading-1 {
+    font-size: 1.625rem;
+    line-height: 1.9375rem;
+    font-weight: 400;
   }
-  button {
-    background-color: #f9f9f9;
+
+  /* Heading 2: 20px / 24px → 1.25rem / 1.5rem */
+  .heading-2 {
+    font-size: 1.25rem;
+    line-height: 1.5rem;
+    font-weight: 400;
+  }
+
+  /* Heading 3: 16px / 27px → 1rem / 1.6875rem */
+  .heading-3 {
+    font-size: 1rem;
+    line-height: 1.6875rem;
+    font-weight: 700;
+  }
+
+  /* Body 1: 16px / 27px → 1rem / 1.6875rem */
+  .body-1 {
+    font-size: 1rem;
+    line-height: 1.6875rem;
+    font-weight: 400;
+  }
+
+  /* Body 2: 13px / 20px → 0.8125rem / 1.25rem */
+  .body-2 {
+    font-size: 0.8125rem;
+    line-height: 1.25rem;
+    font-weight: 400;
   }
 }
