@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest';
 
 import * as idbKeyval from 'idb-keyval';
-import { createStorage } from '../storage';
+import { createStorage } from '../';
 
 const storage = createStorage();
 
