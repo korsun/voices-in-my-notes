@@ -1,35 +1,142 @@
-/// <reference types="vitest" />
-import { describe, it, expect, beforeEach, vi } from 'vitest'; import { createStorage } from '../storage'; 
+import { describe, it, expect, beforeEach } from 'vitest';
+
 import * as idbKeyval from 'idb-keyval';
+import { createStorage } from '../storage';
 
 const storage = createStorage();
 
-beforeEach(() => { vi.clearAllMocks(); localStorage.clear(); });
+beforeEach(() => {
+  localStorage.clear();
+});
 
-describe('createStorage - get', () => { it('returns value from IndexedDB when present', async () => { vi.spyOn(idbKeyval, 'get').mockResolvedValue('from-idb'); const result = await storage.get<string>('key'); expect(idbKeyval.get).toHaveBeenCalledWith('key', undefined); expect(result).toBe('from-idb'); });
+describe('createStorage', () => {
+  describe('get', () => {
+    it('returns value from IndexedDB when present', async () => {
+      await idbKeyval.set('key', 'from-idb');
 
-it('falls back to localStorage when IndexedDB returns undefined', async () => { vi.spyOn(idbKeyval, 'get').mockResolvedValue(undefined); localStorage.setItem('key', JSON.stringify('from-ls')); const result = await storage.get<string>('key'); expect(result).toBe('from-ls'); });
+      const result = await storage.get<string>('key');
 
-it('throws when neither storage has data', async () => { vi.spyOn(idbKeyval, 'get').mockRejectedValue(new Error('fail'));
-await expect(storage.get('key')).rejects.toThrow('No IndexedDB data and localStorage unavailable.'); }); });
+      expect(result).toBe('from-idb');
+    });
 
-describe('createStorage - set', () => { it('saves to IndexedDB when possible', async () => { const spy = vi.spyOn(idbKeyval, 'set').mockResolvedValue(undefined); await storage.set('key', { foo: 'bar' }); expect(spy).toHaveBeenCalledWith('key', { foo: 'bar' }, undefined); expect(localStorage.getItem('key')).toBeNull(); });
+    it('falls back to localStorage when IndexedDB returns undefined', async () => {
+      // Simulate environment without IndexedDB
+      const originalIndexedDB = globalThis.indexedDB;
+      delete (globalThis as Record<string, unknown>).indexedDB;
 
-it('falls back to localStorage on error', async () => { vi.spyOn(idbKeyval, 'set').mockRejectedValue(new Error('fail')); await storage.set('key', 123); expect(localStorage.getItem('key')).toBe(JSON.stringify(123)); }); });
+      localStorage.setItem('key', JSON.stringify('from-ls'));
 
-describe('createStorage - update', () => { it('updates via IndexedDB when possible', async () => { vi.spyOn(idbKeyval, 'update').mockResolvedValue('new'); const result = await storage.update('key', () => 'new'); expect(result).toBe('new'); });
+      const result = await storage.get<string>('key');
+      expect(result).toBe('from-ls');
 
-it('falls back to localStorage on error', async () => { vi.spyOn(idbKeyval, 'update').mockRejectedValue(new Error('fail')); localStorage.setItem('key', JSON.stringify('old')); const result = await storage.update('key', old => old ? `${old}-updated` : 'updated'); expect(result).toBe('old-updated'); expect(localStorage.getItem('key')).toBe(JSON.stringify('old-updated')); }); });
+      // restore
+      globalThis.indexedDB = originalIndexedDB;
+    });
+  });
 
-describe('createStorage - remove', () => { it('removes via IndexedDB when possible', async () => { const spy = vi.spyOn(idbKeyval, 'del').mockResolvedValue(undefined); localStorage.setItem('key', 'keep'); await storage.remove('key'); expect(spy).toHaveBeenCalledWith('key', undefined); expect(localStorage.getItem('key')).toBe('keep'); });
+  describe('set', () => {
+    it('saves to IndexedDB when possible', async () => {
+      await storage.set('key', { foo: 'bar' });
 
-it('falls back to localStorage on error', async () => { vi.spyOn(idbKeyval, 'del').mockRejectedValue(new Error('fail')); localStorage.setItem('key', 'value'); await storage.remove('key'); expect(localStorage.getItem('key')).toBeNull(); }); });
+      const idbValue = await idbKeyval.get('key');
+      expect(idbValue).toEqual({ foo: 'bar' });
+      expect(localStorage.getItem('key')).toBeNull();
+    });
 
-describe('createStorage - clear', () => { it('clears IndexedDB when possible', async () => { const spy = vi.spyOn(idbKeyval, 'clear').mockResolvedValue(undefined); localStorage.setItem('a', '1'); await storage.clear(); expect(spy).toHaveBeenCalledWith(undefined); expect(localStorage.getItem('a')).toBe('1'); });
+    it('falls back to localStorage on error', async () => {
+      // Simulate no IndexedDB
+      const originalIndexedDB = globalThis.indexedDB;
+      delete (globalThis as Record<string, unknown>).indexedDB;
 
-it('falls back to localStorage on error', async () => { vi.spyOn(idbKeyval, 'clear').mockRejectedValue(new Error('fail')); localStorage.setItem('a', '1'); await storage.clear(); expect(localStorage.length).toBe(0); }); });
+      await storage.set('key', 123);
 
-describe('createStorage - keys', () => { it('returns keys from IndexedDB when non-empty', async () => { vi.spyOn(idbKeyval, 'keys').mockResolvedValue(['x', 'y']); const keys = await storage.keys(); expect(keys).toEqual(['x', 'y']); });
+      // restore
+      globalThis.indexedDB = originalIndexedDB;
 
-it('falls back to localStorage on error or empty', async () => { vi.spyOn(idbKeyval, 'keys').mockResolvedValue([]); localStorage.setItem('foo', '1'); localStorage.setItem('bar', '2'); const keys = await storage.keys(); expect(keys).toEqual(['foo', 'bar']); }); });
+      expect(localStorage.getItem('key')).toBe(JSON.stringify(123));
+    });
+  });
 
+  describe('update', () => {
+    it('updates via IndexedDB when possible', async () => {
+      await idbKeyval.set('key', 'old');
+      const result = await storage.update('key', () => 'new');
+      expect(result).toBe('new');
+      const idbVal = await idbKeyval.get('key');
+      expect(idbVal).toBe('new');
+    });
+
+    it('falls back to localStorage on error', async () => {
+      // remove indexedDB
+      const originalIndexedDB = globalThis.indexedDB;
+      delete (globalThis as Record<string, unknown>).indexedDB;
+      localStorage.setItem('key', JSON.stringify('old'));
+
+      const result = await storage.update('key', (old) => (old ? `${old}-updated` : 'updated'));
+      expect(result).toBe('old-updated');
+      expect(localStorage.getItem('key')).toBe(JSON.stringify('old-updated'));
+
+      globalThis.indexedDB = originalIndexedDB;
+    });
+  });
+
+  describe('remove', () => {
+    it('removes via IndexedDB when possible', async () => {
+      await idbKeyval.set('key', 'keep');
+      localStorage.setItem('key', 'keep-ls');
+      await storage.remove('key');
+      const idbVal = await idbKeyval.get('key');
+      expect(idbVal).toBeUndefined();
+      // localStorage untouched
+      expect(localStorage.getItem('key')).toBe('keep-ls');
+    });
+
+    it('falls back to localStorage on error', async () => {
+      const originalIndexedDB = globalThis.indexedDB;
+      delete (globalThis as Record<string, unknown>).indexedDB;
+      localStorage.setItem('key', 'value');
+      await storage.remove('key');
+      expect(localStorage.getItem('key')).toBeNull();
+      globalThis.indexedDB = originalIndexedDB;
+    });
+  });
+
+  describe('clear', () => {
+    it('clears IndexedDB when possible', async () => {
+      await idbKeyval.set('x', '1');
+      localStorage.setItem('a', '1');
+      await storage.clear();
+      const keys = await idbKeyval.keys();
+      expect(keys.length).toBe(0);
+      expect(localStorage.getItem('a')).toBe('1');
+    });
+
+    it('falls back to localStorage on error', async () => {
+      const originalIndexedDB = globalThis.indexedDB;
+      delete (globalThis as Record<string, unknown>).indexedDB;
+      localStorage.setItem('a', '1');
+      await storage.clear();
+      expect(localStorage.length).toBe(0);
+      globalThis.indexedDB = originalIndexedDB;
+    });
+  });
+
+  describe('keys', () => {
+    it('returns keys from IndexedDB when non-empty', async () => {
+      await idbKeyval.set('x', '1');
+      await idbKeyval.set('y', '2');
+      const keys = await storage.keys();
+      expect(keys.sort()).toEqual(['x', 'y']);
+    });
+
+    it('falls back to localStorage on error or empty', async () => {
+      const originalIndexedDB = globalThis.indexedDB;
+      delete (globalThis as Record<string, unknown>).indexedDB;
+      localStorage.setItem('foo', '1');
+      localStorage.setItem('bar', '2');
+      const keys = await storage.keys();
+      expect(keys.sort()).toEqual(['bar', 'foo']);
+      globalThis.indexedDB = originalIndexedDB;
+    });
+  });
+});

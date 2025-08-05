@@ -1,5 +1,5 @@
-import { notesStorage } from './const.ts'
+import { notesStorage } from './const.ts';
 
-export async function getNoteById<T>(id: string): Promise<T | null> {
-  return notesStorage.get<T>(id)
+export async function getNoteById<TNote>(id: string): Promise<TNote | undefined> {
+  return notesStorage.get<TNote>(id);
 }

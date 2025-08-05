@@ -1,8 +1,8 @@
-import { notesStorage } from './const'
+import { notesStorage } from './const';
 
-export async function updateNote<T>(
+export async function updateNote<TNote>(
   id: string,
-  updater: (old: T | undefined) => T
-): Promise<T> {
-  return notesStorage.update<T>(id, updater)
+  updater: (old: TNote | undefined) => TNote
+): Promise<TNote | undefined> {
+  return notesStorage.update<TNote>(id, updater);
 }
