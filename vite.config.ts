@@ -9,12 +9,5 @@ export default defineConfig({
     port: 3000,
     allowedHosts: ['53f8c2e8-77bc-4033-9ed7-7cdddf159c6d-00-3jpycbzkd1mdu.worf.replit.dev'],
   },
-  plugins: [
-    react(),
-    tailwindcss(),
-    tsconfigPaths({
-      // This will automatically read the paths from tsconfig.app.json
-      // No need to manually specify aliases here
-    }),
-  ],
+  plugins: [react(), tailwindcss(), tsconfigPaths()],
 });
