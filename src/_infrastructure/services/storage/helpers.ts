@@ -1,6 +1,6 @@
 export async function withStorageFallback<T>(
   idbFn: (() => Promise<T>) | undefined,
-  lsFn: (() => T) | undefined
+  lsFn: (() => T) | undefined,
 ): Promise<T | undefined> {
   const idbAvailable = indexedDBAvailable();
   const lsAvailable = localStorageAvailable();
@@ -9,13 +9,17 @@ export async function withStorageFallback<T>(
     try {
       return await idbFn();
     } catch (err) {
-      if (err instanceof Error) throw err;
+      if (err instanceof Error) {
+        throw err;
+      }
     }
   } else if (lsAvailable && lsFn) {
     try {
       return lsFn();
     } catch (err) {
-      if (err instanceof Error) throw err;
+      if (err instanceof Error) {
+        throw err;
+      }
     }
   }
 
@@ -25,8 +29,10 @@ export async function withStorageFallback<T>(
 const localStorageAvailable = (): boolean => {
   try {
     const testKey = '__ls_test';
+
     window.localStorage.setItem(testKey, '1');
     window.localStorage.removeItem(testKey);
+
     return true;
   } catch {
     return false;

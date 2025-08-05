@@ -19,10 +19,14 @@
     "pre-commit": "pnpm format && pnpm tsc -b && pnpm lint-staged"
   },
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.14",
+    "clsx": "^2.1.1",
     "idb-keyval": "^6.2.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "sonner": "^2.0.7",
     "tailwindcss": "^4.1.11",
+    "use-debounce": "^10.0.5",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -37,6 +41,8 @@
     "@typescript-eslint/parser": "^8.38.0",
     "@vitejs/plugin-react": "^4.6.0",
     "eslint": "^9.30.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.3",
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-react-refresh": "^0.4.20",
