@@ -1,3 +1,3 @@
 export { List, type TListHandle } from './List';
-export { Editor } from './Editor';
+export { Editor, type TEditorHandle } from './Editor';
 export { Layout } from './Layout';

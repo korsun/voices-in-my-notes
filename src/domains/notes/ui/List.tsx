@@ -33,12 +33,12 @@ export const List = forwardRef<TListHandle, TListProps>(
             Create note
           </Button>
         </div>
-        <div ref={listRef} className="flex-1 overflow-y-auto p-4 gap-2 flex flex-col">
+        <div ref={listRef} className="flex-1 overflow-y-auto p-4">
           {isLoading && <div className="p-4 text-center text-gray3">Loading...</div>}
           {!isLoading && notes.length === 0 ? (
             <div className="text-center text-gray2 heading-3">No notes yet 😔</div>
           ) : (
-            <ul>
+            <ul className="flex flex-col gap-2">
               {notes.map((note) => (
                 <li key={note.id} onClick={() => onSelectNote(note)}>
                   <Card

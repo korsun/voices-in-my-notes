@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { type FC, useEffect, useRef, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import type { TNote } from 'domains/notes/models';
 import { Button, ConfirmDialog } from 'ui';
@@ -7,17 +7,31 @@ type TEditorProps = {
   note: TNote | null;
   onUpdateNote: (id: string, updates: Partial<TNote>) => void;
   onDeleteNote: (id: string) => void;
+  autoFocusTitle?: boolean;
 };
 
-export function Editor({ note, onUpdateNote, onDeleteNote }: TEditorProps) {
+export const Editor: FC<TEditorProps> = ({
+  note,
+  onUpdateNote,
+  onDeleteNote,
+  autoFocusTitle = false,
+}) => {
   const [title, setTitle] = useState(note?.title ?? '');
   const [text, setText] = useState(note?.text ?? '');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+
+  const titleRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setTitle(note?.title ?? '');
     setText(note?.text ?? '');
   }, [note]);
+
+  useEffect(() => {
+    if (autoFocusTitle && titleRef.current) {
+      titleRef.current.focus();
+    }
+  }, [autoFocusTitle, note?.id]);
 
   const debouncedUpdate = useDebouncedCallback((id: string, updates: Partial<TNote>) => {
     onUpdateNote(id, updates);
@@ -64,24 +78,30 @@ export function Editor({ note, onUpdateNote, onDeleteNote }: TEditorProps) {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="flex justify-between items-center mb-4">
-        <input
-          type="text"
-          value={title}
-          onChange={handleTitleChange}
-          className="heading-2 w-full focus:outline-none overflow-hidden text-ellipsis whitespace-nowrap"
-          placeholder="Note title"
-        />
+      <div className="flex justify-end items-center mb-4">
         <Button onClick={handleDelete} variant="secondary">
           Delete
         </Button>
       </div>
+
+      <input
+        key={`title-${note?.id || 'new'}`}
+        type="text"
+        value={title}
+        onChange={handleTitleChange}
+        className="heading-2 w-full focus:outline-none overflow-hidden text-ellipsis whitespace-nowrap mb-6"
+        placeholder="Note title"
+        ref={titleRef}
+        autoFocus={autoFocusTitle}
+      />
+
       <textarea
         value={text}
         onChange={handleTextChange}
         className="flex-1 w-full resize-none focus:outline-none focus:ring-0 focus:border-transparent"
         placeholder="Start writing your note here..."
       />
+
       <ConfirmDialog
         isOpen={isConfirmOpen}
         title="Delete Note"
@@ -93,4 +113,6 @@ export function Editor({ note, onUpdateNote, onDeleteNote }: TEditorProps) {
       />
     </div>
   );
-}
+};
+
+Editor.displayName = 'Editor';
