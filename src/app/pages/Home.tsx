@@ -18,12 +18,7 @@ export function Home() {
       setIsLoading(true);
 
       const notesEntries = await getNotes();
-      const loadedNotes = notesEntries
-        .map(([, note]) => ({
-          ...note,
-          updatedAt: new Date(note.updatedAt).toISOString(),
-        }))
-        .sort(sortByDate);
+      const loadedNotes = notesEntries.map(([, note]) => note).sort(sortByDate);
 
       setNotes(loadedNotes);
 
