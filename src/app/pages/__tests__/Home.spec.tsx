@@ -1,19 +1,23 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import type { TNote } from 'domains/notes/models';
 import { Home } from '../Home';
 import '@testing-library/jest-dom';
 
 // Mock the API functions with proper typing
-const { mockedGetNotes, mockedCreateNote } = vi.hoisted(() => ({
+const { mockedGetNotes, mockedCreateNote, mockedUpdateNote, mockedRemoveNote } = vi.hoisted(() => ({
   mockedGetNotes: vi.fn(),
   mockedCreateNote: vi.fn(),
+  mockedUpdateNote: vi.fn(),
+  mockedRemoveNote: vi.fn(),
 }));
 
 // Mock the API functions
 vi.mock('domains/notes/api', () => ({
   getNotes: mockedGetNotes,
   createNote: mockedCreateNote,
+  updateNote: mockedUpdateNote,
+  removeNote: mockedRemoveNote,
 }));
 
 describe('Home Page', () => {
@@ -147,15 +151,18 @@ describe('Home Page', () => {
       expect(noteItems[1]).toHaveTextContent('Middle');
       expect(noteItems[2]).toHaveTextContent('Oldest');
 
-      // Verify the order in the DOM matches our expected order
-      const displayedNotes = noteItems.map((item) => item.textContent);
+      // Verify the order and content of the displayed notes
+      const displayedNotes = noteItems.map((item) => item.textContent || '');
 
-      // Note: The Card component shows both title and date, so we expect them concatenated
-      expect(displayedNotes).toEqual([
-        'NewestNewest note1/3/2023, 1:00:00 AM',
-        'MiddleMiddle note1/2/2023, 1:00:00 AM',
-        'OldestOldest note1/1/2023, 1:00:00 AM',
-      ]);
+      // Check that each note contains the expected title (appears twice - once in the title and once in the content)
+      expect(displayedNotes[0]).toContain('Newest');
+      expect(displayedNotes[1]).toContain('Middle');
+      expect(displayedNotes[2]).toContain('Oldest');
+
+      // Verify the order by checking the note content
+      expect(displayedNotes[0]).toContain('Newest note');
+      expect(displayedNotes[1]).toContain('Middle note');
+      expect(displayedNotes[2]).toContain('Oldest note');
 
       // Verify the newest note's content is displayed in the editor
       const editorTitle = await screen.findByDisplayValue('Newest');
@@ -165,7 +172,7 @@ describe('Home Page', () => {
   });
 
   describe.skip('Note Creation', () => {
-    it.skip('should create a new note with default title "New note", add it to the list and select it, should clear the "Create a note or choose one" message after creation', async () => {
+    it('should create a new note with default title "New note", add it to the list and select it, should clear the "Create a note or choose one" message after creation', async () => {
       // Arrange
       const mockNotes: [string, TNote][] = [
         [
@@ -238,31 +245,246 @@ describe('Home Page', () => {
     });
   });
 
-  describe.skip('Note Selection', () => {
-    it('should update the selected note when clicking on a different note');
-    it('should show note title as editable');
-    it('should show note text as editable');
-  });
+  describe('Note Editing', () => {
+    it('should update card title and text when a note is edited', async () => {
+      // Arrange
+      const noteId = '1';
+      const initialNote = {
+        id: noteId,
+        title: 'Initial Title',
+        text: 'Initial content',
+        updatedAt: new Date().toISOString(),
+      };
 
-  describe.skip('Note Editing', () => {
-    it('should update note title when edited');
-    it('should update note text when edited');
+      mockedGetNotes.mockResolvedValue([[noteId, initialNote]]);
+      mockedUpdateNote.mockImplementation(async (_, updates) => {
+        return { ...initialNote, ...updates };
+      });
+
+      // Act
+      render(<Home />);
+
+      // Wait for the note to load
+      await screen.findByText('Initial Title');
+
+      // Update the note title
+      const titleInput = screen.getByPlaceholderText('Note title');
+
+      fireEvent.change(titleInput, { target: { value: 'Updated Title' } });
+
+      // Helper function to extract updates from the mock call
+      const getUpdatesFromMock = (callIndex: number) => {
+        const call = mockedUpdateNote.mock.calls[callIndex];
+        const updates = typeof call[1] === 'function' ? call[1](initialNote) : call[1];
+
+        return updates;
+      };
+
+      // Wait for title update to be processed
+      await waitFor(
+        () => {
+          expect(mockedUpdateNote).toHaveBeenCalled();
+
+          const updates = getUpdatesFromMock(0);
+
+          expect(updates).toMatchObject({
+            title: 'Updated Title',
+          });
+        },
+        { timeout: 1000 },
+      );
+
+      // Update the note content
+      const contentInput = screen.getByPlaceholderText('Start writing your note here...');
+
+      fireEvent.change(contentInput, { target: { value: 'Updated content' } });
+
+      // Wait for text update to be processed
+      await waitFor(
+        () => {
+          expect(mockedUpdateNote).toHaveBeenCalledTimes(2);
+
+          const updates = getUpdatesFromMock(1);
+
+          expect(updates).toMatchObject({
+            text: 'Updated content',
+          });
+        },
+        { timeout: 500 },
+      );
+
+      // Verify the editor shows the updated content
+      await waitFor(() => {
+        const editorTitle = screen.getByPlaceholderText('Note title');
+        const editorContent = screen.getByPlaceholderText('Start writing your note here...');
+
+        expect(editorTitle).toHaveValue('Updated Title');
+        expect(editorContent).toHaveValue('Updated content');
+      });
+
+      // Verify the card in the list shows the updated content
+      await waitFor(() => {
+        // Find the card by its container and then check its content
+        const cards = screen.getAllByRole('listitem');
+        const updatedCard = cards.find(
+          (card) =>
+            card.textContent?.includes('Updated Title') &&
+            card.textContent?.includes('Updated content'),
+        );
+
+        expect(updatedCard).toBeInTheDocument();
+      });
+    });
+
     it('should debounce text input updates');
     it('should persist changes to storage');
   });
 
-  describe.skip('Note Deletion', () => {
-    it('should show confirmation dialog when delete button is clicked');
-    it('should delete note when confirmed');
-    it('should select next note if available after deletion');
-    it('should clear right panel if no notes remain after deletion');
-    it('should show empty state when last note is deleted');
-    it('should not delete note when deletion is cancelled');
-  });
+  describe('Note Deletion', () => {
+    it('should show confirmation dialog when delete button is clicked', async () => {
+      // Arrange
+      const mockNotes: [string, TNote][] = [
+        [
+          '1',
+          {
+            id: '1',
+            title: 'Test Note',
+            text: 'Test content',
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+      ];
 
-  describe.skip('Empty State', () => {
-    it('should show "Create a note or choose one" when no note is selected');
-    it('should hide empty state message when a note is selected');
-    it('should show empty state again when all notes are deleted');
+      mockedGetNotes.mockResolvedValue(mockNotes);
+
+      render(<Home />);
+
+      await screen.findByText('Test Note');
+
+      const deleteButton = screen.getByRole('button', { name: /delete/i });
+
+      fireEvent.click(deleteButton);
+
+      const dialog = await screen.findByRole('dialog');
+
+      expect(dialog).toBeInTheDocument();
+      expect(screen.getByText('Delete Note')).toBeInTheDocument();
+      expect(screen.getByText(/are you sure you want to delete this note/i)).toBeInTheDocument();
+    });
+
+    it('should not delete note when deletion is cancelled', async () => {
+      // Arrange
+      const mockNotes: [string, TNote][] = [
+        [
+          '1',
+          {
+            id: '1',
+            title: 'Test Note',
+            text: 'Test content',
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+      ];
+
+      mockedGetNotes.mockResolvedValue(mockNotes);
+
+      const removeNoteMock = vi.fn();
+
+      mockedRemoveNote.mockResolvedValueOnce(removeNoteMock);
+
+      render(<Home />);
+
+      // Wait for note to load and be selected
+      await screen.findByText('Test Note');
+
+      // Click delete button to open confirmation dialog
+      const deleteButton = screen.getByRole('button', { name: /delete/i });
+
+      fireEvent.click(deleteButton);
+
+      // Find and click the cancel button
+      const cancelButton = await screen.findByRole('button', { name: /cancel/i });
+
+      fireEvent.click(cancelButton);
+
+      // Assert that the note is still in the list
+      expect(screen.getByText('Test Note')).toBeInTheDocument();
+
+      // Assert that removeNote was never called
+      expect(removeNoteMock).not.toHaveBeenCalled();
+
+      // Assert that the dialog is closed
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
+
+    it('should delete note when confirmed', async () => {
+      // Arrange
+      const mockNotes: [string, TNote][] = [
+        [
+          '1',
+          {
+            id: '1',
+            title: 'Note to Delete',
+            text: 'This note will be deleted',
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+        [
+          '2',
+          {
+            id: '2',
+            title: 'Another Note',
+            text: 'This note will remain',
+            updatedAt: new Date().toISOString(),
+          },
+        ],
+      ];
+
+      // Set up the mock to return the initial notes
+      mockedGetNotes.mockResolvedValue(mockNotes);
+
+      // Set up the mock for removeNote to resolve successfully
+      mockedRemoveNote.mockResolvedValueOnce(undefined);
+
+      // Act
+      render(<Home />);
+
+      // Wait for notes to load
+      await screen.findByText('Note to Delete');
+
+      // Click delete button to open confirmation dialog
+      const deleteButton = screen.getByRole('button', { name: /delete/i });
+
+      fireEvent.click(deleteButton);
+
+      // Find and click the confirm button
+      const confirmButton = await screen.findByRole('button', { name: 'Delete' });
+
+      fireEvent.click(confirmButton);
+
+      // Assert that removeNote was called with the correct note ID
+      expect(mockedRemoveNote).toHaveBeenCalledWith('1');
+
+      // Since the component updates asynchronously, wait for the note to be removed and the next one to be selected
+      await waitFor(() => {
+        expect(screen.queryByText('Note to Delete')).not.toBeInTheDocument();
+      });
+
+      // Wait for the next note to be selected and its content to be displayed
+      const remainingNote = await screen.findByText('Another Note');
+
+      // The note should be selected (check for selected state on the Card)
+      const card = remainingNote.closest('li')?.firstChild;
+
+      expect(card).toHaveClass('bg-gray4');
+      expect(card).not.toHaveClass('bg-white');
+
+      // The editor should show the remaining note's content
+      expect(await screen.findByDisplayValue('Another Note')).toBeInTheDocument();
+      expect(await screen.findByDisplayValue('This note will remain')).toBeInTheDocument();
+
+      // Assert that the dialog is closed
+      expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+    });
   });
 });

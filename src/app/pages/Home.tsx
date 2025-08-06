@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
-import { Editor, Layout, List } from 'domains/notes/ui';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Editor, Layout, List, type TListHandle } from 'domains/notes/ui';
 import { createNote, getNotes, removeNote, updateNote } from 'domains/notes/api';
 import type { TNote } from 'domains/notes/models';
 import { onError } from '_infrastructure/helpers';
@@ -11,6 +11,7 @@ export function Home() {
   const [notes, setNotes] = useState<TNote[]>([]);
   const [selectedNote, setSelectedNote] = useState<TNote | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const listRef = useRef<TListHandle>(null);
 
   const loadNotes = useCallback(async () => {
     try {
@@ -89,11 +90,20 @@ export function Home() {
     try {
       await removeNote(id);
 
-      setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id));
+      setNotes((prevNotes) => {
+        const updatedNotes = prevNotes.filter((note) => note.id !== id);
 
-      if (selectedNote?.id === id) {
-        setSelectedNote(null);
-      }
+        // If we deleted the selected note, select the first remaining note if any
+        if (selectedNote?.id === id && updatedNotes.length > 0) {
+          setSelectedNote(updatedNotes[0]);
+          // Scroll the list to the top after deletion
+          listRef.current?.scrollToTop();
+        } else if (selectedNote?.id === id) {
+          setSelectedNote(null);
+        }
+
+        return updatedNotes;
+      });
     } catch (error) {
       onError(error, 'Failed to delete note');
     }
@@ -108,6 +118,7 @@ export function Home() {
       <Layout
         leftPanel={
           <List
+            ref={listRef}
             notes={notes}
             selectedNoteId={selectedNote?.id || null}
             onSelectNote={handleSelectNote}
