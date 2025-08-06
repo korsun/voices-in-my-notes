@@ -20,14 +20,8 @@ export function ConfirmDialog({
   onConfirm,
   onOpenChange,
 }: TConfirmDialogProps) {
-  const handleCancel = (open: boolean) => {
-    if (!open) {
-      onOpenChange(false);
-    }
-  };
-
   return (
-    <Dialog.Root open={isOpen} onOpenChange={handleCancel}>
+    <Dialog.Root open={isOpen} onOpenChange={onOpenChange}>
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 bg-primary/50" />
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-custom w-[90vw] max-w-md">

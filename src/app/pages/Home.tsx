@@ -4,8 +4,7 @@ import { createNote, getNotes, removeNote, updateNote } from 'domains/notes/api'
 import type { TNote } from 'domains/notes/models';
 import { onError } from '_infrastructure/helpers';
 
-const sortByDate = (a: TNote, b: TNote) =>
-  new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime();
+const sortByDate = (a: TNote, b: TNote) => b.updatedAt.localeCompare(a.updatedAt);
 
 export function Home() {
   const [notes, setNotes] = useState<TNote[]>([]);

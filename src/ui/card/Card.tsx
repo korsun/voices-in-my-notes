@@ -11,6 +11,8 @@ type TCardProps = {
 export const Card: FC<TCardProps> = memo(({ title, text, isSelected = false, updatedAt }) => {
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={clsx(
         'w-[298px] h-[125px] p-4 rounded-custom transition-colors duration-200 hover:bg-gray4 overflow-hidden flex flex-col hover:cursor-pointer',
         {
