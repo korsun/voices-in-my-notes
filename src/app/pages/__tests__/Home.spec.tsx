@@ -453,7 +453,7 @@ describe('Home Page', () => {
       await screen.findByText('Note to Delete');
 
       // Click delete button to open confirmation dialog
-      const deleteButton = screen.getByRole('button', { name: /delete/i });
+      const deleteButton = screen.getByRole('button', { name: 'Delete' });
 
       fireEvent.click(deleteButton);
 
