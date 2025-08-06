@@ -1,11 +1,11 @@
+import type { createStore } from 'idb-keyval';
 import {
-  get as idbGet,
-  set as idbSet,
-  del as idbDel,
-  update as idbUpdate,
   clear as idbClear,
+  del as idbDel,
+  get as idbGet,
   keys as idbKeys,
-  createStore,
+  set as idbSet,
+  update as idbUpdate,
 } from 'idb-keyval';
 
 import { withStorageFallback } from './helpers';
@@ -15,12 +15,14 @@ export const createStorage = (store?: ReturnType<typeof createStore>) => ({
     return withStorageFallback<T | undefined>(
       async () => {
         const value = await idbGet(key, store);
+
         return value;
       },
       () => {
         const raw = localStorage.getItem(key);
+
         return raw ? (JSON.parse(raw) as T) : undefined;
-      }
+      },
     );
   },
 
@@ -31,27 +33,31 @@ export const createStorage = (store?: ReturnType<typeof createStore>) => ({
       },
       () => {
         localStorage.setItem(key, JSON.stringify(value));
-      }
+      },
     );
   },
 
   async update<T = unknown>(
     key: string,
-    updater: (oldValue: T | undefined) => T
+    updater: (oldValue: T | undefined) => T,
   ): Promise<T | undefined> {
     return withStorageFallback<T>(
       async () => {
         await idbUpdate(key, updater, store);
+
         const updated = await idbGet(key, store);
+
         return updated as T;
       },
       () => {
         const raw = localStorage.getItem(key);
         const oldValue = raw ? (JSON.parse(raw) as T) : undefined;
         const newValue = updater(oldValue);
+
         localStorage.setItem(key, JSON.stringify(newValue));
+
         return newValue;
-      }
+      },
     );
   },
 
@@ -62,7 +68,7 @@ export const createStorage = (store?: ReturnType<typeof createStore>) => ({
       },
       () => {
         localStorage.removeItem(key);
-      }
+      },
     );
   },
 
@@ -73,19 +79,38 @@ export const createStorage = (store?: ReturnType<typeof createStore>) => ({
       },
       () => {
         localStorage.clear();
-      }
+      },
     );
   },
 
-  async keys(): Promise<string[]> {
-    const result = await withStorageFallback<string[]>(
+  async entries<T = unknown>(): Promise<[string, T][]> {
+    const result = await withStorageFallback<[string, T][]>(
       async () => {
         const dbKeys: IDBValidKey[] = await idbKeys(store);
-        return dbKeys ? dbKeys.map((k) => String(k)) : [];
+
+        if (!dbKeys) {
+          return [];
+        }
+
+        const entries = await Promise.all(
+          dbKeys.map(async (key) => {
+            const value = await idbGet(key, store);
+
+            return [String(key), value] as [string, T];
+          }),
+        );
+
+        return entries;
       },
       () => {
-        return Object.keys(localStorage);
-      }
+        return Object.entries(localStorage).map(([key, value]) => {
+          try {
+            return [key, JSON.parse(value)] as [string, T];
+          } catch {
+            return [key, value] as [string, T];
+          }
+        });
+      },
     );
 
     return result ?? [];

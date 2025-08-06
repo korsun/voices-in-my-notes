@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, afterEach } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { withStorageFallback } from '../helpers';
 
 type AnyFn<T = unknown> = () => T;
@@ -10,6 +10,7 @@ describe('withStorageFallback', () => {
   afterEach(() => {
     // restore globals after each test
     globalThis.indexedDB = originalIndexedDB;
+
     if (originalLocalStorage) {
       Object.defineProperty(globalThis, 'localStorage', {
         configurable: true,
@@ -21,6 +22,7 @@ describe('withStorageFallback', () => {
       // delete if it was originally undefined
       delete (globalThis as Record<string, unknown>).localStorage;
     }
+
     vi.restoreAllMocks();
   });
 
@@ -65,7 +67,7 @@ describe('withStorageFallback', () => {
     });
 
     await expect(withStorageFallback<string>(undefined, undefined)).rejects.toThrowError(
-      'No IndexedDB and no localStorage.'
+      'No IndexedDB and no localStorage.',
     );
   });
 });

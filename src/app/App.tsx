@@ -1,11 +1,21 @@
-import Layout from 'ui/Layout';
-import Home from './pages/Home';
+import { Toaster } from 'sonner';
+import { Home } from './pages';
 
 function App() {
   return (
-    <Layout>
+    <>
       <Home />
-    </Layout>
+      <Toaster
+        position="bottom-right"
+        toastOptions={{
+          classNames: {
+            toast: '!bg-accent !text-white !border-0 !shadow-lg',
+            title: '!text-white',
+            description: '!text-white/90',
+          },
+        }}
+      />
+    </>
   );
 }
 
