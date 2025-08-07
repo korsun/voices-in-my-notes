@@ -19,11 +19,12 @@
     "pre-commit": "pnpm format && pnpm tsc -b && pnpm lint-staged"
   },
   "dependencies": {
-    "@radix-ui/react-dialog": "^1.1.14",
     "clsx": "^2.1.1",
     "idb-keyval": "^6.2.2",
+    "radix-ui": "^1.4.2",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "react-speech-recognition": "^4.0.1",
     "sonner": "^2.0.7",
     "tailwindcss": "^4.1.11",
     "use-debounce": "^10.0.5",
@@ -37,6 +38,7 @@
     "@testing-library/user-event": "^14.6.1",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
+    "@types/react-speech-recognition": "^3.9.6",
     "@typescript-eslint/eslint-plugin": "^8.38.0",
     "@typescript-eslint/parser": "^8.38.0",
     "@vitejs/plugin-react": "^4.6.0",

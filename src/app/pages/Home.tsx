@@ -11,6 +11,7 @@ export function Home() {
   const [selectedNote, setSelectedNote] = useState<TNote | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const listRef = useRef<TListHandle>(null);
+  const [isNewNote, setIsNewNote] = useState(false);
 
   const loadNotes = useCallback(async () => {
     try {
@@ -39,7 +40,7 @@ export function Home() {
 
   const handleCreateNote = async () => {
     try {
-      const newNote = {
+      const newNote: Omit<TNote, 'id'> = {
         title: 'New note',
         text: '',
         updatedAt: new Date().toISOString(),
@@ -50,6 +51,7 @@ export function Home() {
 
       const createdNote = { id, ...newNote };
 
+      setIsNewNote(true);
       setSelectedNote(createdNote);
     } catch (error) {
       onError(error, 'Failed to create note');
@@ -125,6 +127,7 @@ export function Home() {
             note={selectedNote}
             onUpdateNote={handleUpdateNote}
             onDeleteNote={handleDeleteClick}
+            autoFocusTitle={isNewNote}
           />
         }
       />
