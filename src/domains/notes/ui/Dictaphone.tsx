@@ -40,19 +40,14 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
 
   const handleVoiceRecord = useCallback(() => {
     // eslint-disable-next-line no-console
-    console.log('browserSupportsSpeechRecognition', browserSupportsSpeechRecognition);
+    console.log('listening', listening);
 
     resetTranscript();
     SpeechRecognition.startListening({
       continuous: browserSupportsContinuousListening,
       language: selectedLanguage,
     });
-  }, [
-    browserSupportsContinuousListening,
-    resetTranscript,
-    selectedLanguage,
-    browserSupportsSpeechRecognition,
-  ]);
+  }, [browserSupportsContinuousListening, resetTranscript, selectedLanguage, listening]);
 
   const handleVoiceStop = useCallback(() => {
     SpeechRecognition.stopListening();
@@ -101,6 +96,9 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
   if (!browserSupportsSpeechRecognition) {
     return null;
   }
+
+  // eslint-disable-next-line no-console
+  console.log('listening1', listening);
 
   return (
     <div className="flex items-center mr-4">
