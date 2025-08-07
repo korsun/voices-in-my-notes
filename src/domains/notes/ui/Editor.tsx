@@ -1,5 +1,6 @@
-import { type FC, useEffect, useRef, useState } from 'react';
+import { type FC, useCallback, useEffect, useRef, useState } from 'react';
 import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import { clsx } from 'clsx';
 import { useDebouncedCallback } from 'use-debounce';
 import type { TNote } from '../models';
 import { Button, ConfirmDialog } from 'ui';
@@ -65,17 +66,17 @@ export const Editor: FC<TEditorProps> = ({
     setIsConfirmOpen(true);
   };
 
-  const handleConfirmDelete = () => {
+  const handleConfirmDelete = useCallback(() => {
     if (note) {
       onDeleteNote(note.id);
       setIsConfirmOpen(false);
     }
-  };
+  }, [note, onDeleteNote]);
 
   const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } =
     useSpeechRecognition();
 
-  const handleButtonMouseDown = () => {
+  const handleBeforeVoiceRecord = useCallback(() => {
     if (listening) {
       return;
     }
@@ -97,16 +98,16 @@ export const Editor: FC<TEditorProps> = ({
         end: endPos,
       };
     }
-  };
+  }, [text, listening]);
 
-  const handleVoiceRecord = () => {
+  const handleVoiceRecord = useCallback(() => {
     resetTranscript();
     SpeechRecognition.startListening({
       continuous: true,
     });
-  };
+  }, [resetTranscript]);
 
-  const handleVoiceStop = () => {
+  const handleVoiceStop = useCallback(() => {
     SpeechRecognition.stopListening();
 
     if (!transcript.trim()) {
@@ -156,7 +157,39 @@ export const Editor: FC<TEditorProps> = ({
 
       return newText;
     });
-  };
+  }, [note, onUpdateNote, transcript]);
+
+  // While Alt/Option is pressed, voice recording is in progress
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (
+        e.key === 'Alt' &&
+        !e.ctrlKey &&
+        !e.shiftKey &&
+        !e.metaKey &&
+        document.activeElement === textareaRef.current
+      ) {
+        handleBeforeVoiceRecord();
+        handleVoiceRecord();
+        // prevent default in case Alt would open menus
+        e.preventDefault();
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      if (e.key === 'Alt' && document.activeElement === textareaRef.current) {
+        handleVoiceStop();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [handleBeforeVoiceRecord, handleVoiceRecord, handleVoiceStop]);
 
   if (!note) {
     return (
@@ -170,13 +203,17 @@ export const Editor: FC<TEditorProps> = ({
     <div className="h-full flex flex-col">
       <div className="flex justify-end items-center mb-4">
         {browserSupportsSpeechRecognition && (
-          <Button
-            onClick={listening ? handleVoiceStop : handleVoiceRecord}
-            onMouseDown={handleButtonMouseDown}
-            variant="secondary"
-          >
-            {listening ? 'Stop recording' : 'Record voice'}
-          </Button>
+          <>
+            <div className={clsx('recording-dot', { hidden: !listening })} />
+
+            <Button
+              onClick={listening ? handleVoiceStop : handleVoiceRecord}
+              onMouseDown={handleBeforeVoiceRecord}
+              variant="secondary"
+            >
+              {listening ? 'Stop recording' : 'Record voice'}
+            </Button>
+          </>
         )}
 
         <Button onClick={handleDelete} variant="secondary">

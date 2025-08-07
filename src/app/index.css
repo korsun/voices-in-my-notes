@@ -65,3 +65,26 @@
     font-weight: 400;
   }
 }
+
+@layer utilities {
+  @keyframes pulse {
+    0% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.5;
+      transform: scale(1.2);
+    }
+
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  .recording-dot {
+    @apply w-3 h-3 bg-hover rounded-full ring-2 ring-hover ring-offset-2 ring-offset-white animate-pulse;
+  }
+}
