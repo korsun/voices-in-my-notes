@@ -1,9 +1,10 @@
 import { Toaster } from 'sonner';
 import { Home } from './pages';
+import { VoiceRecordingProvider } from '_infrastructure/contexts';
 
 function App() {
   return (
-    <>
+    <VoiceRecordingProvider>
       <Home />
       <Toaster
         position="bottom-right"
@@ -15,7 +16,7 @@ function App() {
           },
         }}
       />
-    </>
+    </VoiceRecordingProvider>
   );
 }
 

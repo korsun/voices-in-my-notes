@@ -3,6 +3,7 @@ import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognitio
 import { clsx } from 'clsx';
 import { DropdownMenu } from 'radix-ui';
 import { Button } from 'ui';
+import { useVoiceRecording } from '_infrastructure/contexts';
 
 type TDictaphoneProps = {
   isKeyDownReady: boolean;
@@ -19,6 +20,12 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
     browserSupportsContinuousListening,
     isMicrophoneAvailable,
   } = useSpeechRecognition();
+
+  const { toggleListening } = useVoiceRecording();
+
+  useEffect(() => {
+    toggleListening(listening);
+  }, [listening, toggleListening]);
 
   const availableLanguages = navigator.languages || ['en-US'];
   const [selectedLanguage, setSelectedLanguage] = useState(availableLanguages[0]);

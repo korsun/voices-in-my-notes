@@ -4,6 +4,7 @@ import type { TNote } from '../models';
 import { Button, ConfirmDialog } from 'ui';
 import { insertWithSmartSpacing } from '../helpers';
 import { Dictaphone } from '.';
+import { useVoiceRecording } from '_infrastructure/contexts';
 
 type TEditorProps = {
   note: TNote | null;
@@ -26,6 +27,8 @@ export const Editor: FC<TEditorProps> = ({
   const titleRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const selectionRef = useRef<{ start: number; end: number } | null>(null);
+
+  const { isListening } = useVoiceRecording();
 
   useEffect(() => {
     setTitle(note?.title ?? '');
@@ -162,7 +165,7 @@ export const Editor: FC<TEditorProps> = ({
           onStop={handleVoiceStop}
         />
 
-        <Button onClick={handleDelete} variant="primary">
+        <Button onClick={handleDelete} variant="primary" disabled={isListening}>
           Delete
         </Button>
       </div>

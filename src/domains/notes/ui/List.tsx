@@ -1,6 +1,7 @@
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Button, Card } from 'ui';
 import type { TNote } from 'domains/notes/models';
+import { useVoiceRecording } from '_infrastructure/contexts';
 
 type TListProps = {
   notes: TNote[];
@@ -26,10 +27,12 @@ export const List = forwardRef<TListHandle, TListProps>(
       },
     }));
 
+    const { isListening } = useVoiceRecording();
+
     return (
       <div className="h-full flex flex-col">
         <div className="p-4 border-b border-gray3">
-          <Button onClick={onCreateNote} variant="primary" fullWidth>
+          <Button onClick={onCreateNote} variant="primary" fullWidth disabled={isListening}>
             Create note
           </Button>
         </div>
@@ -40,7 +43,7 @@ export const List = forwardRef<TListHandle, TListProps>(
           ) : (
             <ul className="flex flex-col gap-2">
               {notes.map((note) => (
-                <li key={note.id} onClick={() => onSelectNote(note)}>
+                <li key={note.id} onClick={() => !isListening && onSelectNote(note)}>
                   <Card
                     title={note.title}
                     text={note.text}

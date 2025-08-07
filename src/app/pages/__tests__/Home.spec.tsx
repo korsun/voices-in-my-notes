@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { fireEvent, screen, waitFor } from '@testing-library/react';
 import type { TNote } from 'domains/notes/models';
 import { Home } from '../Home';
 import '@testing-library/jest-dom';
+import { render } from '_infrastructure/test-utils/voiceRecordingTestUtils';
 
 // Mock the API functions with proper typing
 const { mockedGetNotes, mockedCreateNote, mockedUpdateNote, mockedRemoveNote } = vi.hoisted(() => ({
@@ -295,7 +296,9 @@ describe('Home Page', () => {
       );
 
       // Update the note content
-      const contentInput = screen.getByPlaceholderText('Start writing your note here...');
+      const contentInput = screen.getByPlaceholderText(
+        'Start writing your note here... Oh, and press Alt key to start voice recording',
+      );
 
       fireEvent.change(contentInput, { target: { value: 'Updated content' } });
 
@@ -316,7 +319,9 @@ describe('Home Page', () => {
       // Verify the editor shows the updated content
       await waitFor(() => {
         const editorTitle = screen.getByPlaceholderText('Note title');
-        const editorContent = screen.getByPlaceholderText('Start writing your note here...');
+        const editorContent = screen.getByPlaceholderText(
+          'Start writing your note here... Oh, and press Alt key to start voice recording',
+        );
 
         expect(editorTitle).toHaveValue('Updated Title');
         expect(editorContent).toHaveValue('Updated content');
