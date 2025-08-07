@@ -1,0 +1,1 @@
+export { insertWithSmartSpacing } from './insertWithSmartSpacing';
