@@ -135,12 +135,12 @@ export const Editor: FC<TEditorProps> = ({
         onUpdateNote(note.id, { text: newText });
 
         // Set cursor position after transcript is inserted
-        setTimeout(() => {
+        requestAnimationFrame(() => {
           if (textareaRef.current) {
             textareaRef.current.focus();
             textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
           }
-        }, 0);
+        });
 
         return newText;
       });
