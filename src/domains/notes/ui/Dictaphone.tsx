@@ -39,12 +39,20 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
   }, [listening, onStart]);
 
   const handleVoiceRecord = useCallback(() => {
+    // eslint-disable-next-line no-console
+    console.log('browserSupportsSpeechRecognition', browserSupportsSpeechRecognition);
+
     resetTranscript();
     SpeechRecognition.startListening({
       continuous: browserSupportsContinuousListening,
       language: selectedLanguage,
     });
-  }, [browserSupportsContinuousListening, resetTranscript, selectedLanguage]);
+  }, [
+    browserSupportsContinuousListening,
+    resetTranscript,
+    selectedLanguage,
+    browserSupportsSpeechRecognition,
+  ]);
 
   const handleVoiceStop = useCallback(() => {
     SpeechRecognition.stopListening();
