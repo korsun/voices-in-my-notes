@@ -1,10 +1,9 @@
 import { type FC, useCallback, useEffect, useRef, useState } from 'react';
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
-import { clsx } from 'clsx';
 import { useDebouncedCallback } from 'use-debounce';
 import type { TNote } from '../models';
 import { Button, ConfirmDialog } from 'ui';
 import { insertWithSmartSpacing } from '../helpers';
+import { Dictaphone } from '.';
 
 type TEditorProps = {
   note: TNote | null;
@@ -22,6 +21,7 @@ export const Editor: FC<TEditorProps> = ({
   const [title, setTitle] = useState(note?.title ?? '');
   const [text, setText] = useState(note?.text ?? '');
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  const [isTextareaFocused, setIsTextareaFocused] = useState(false);
 
   const titleRef = useRef<HTMLInputElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -62,6 +62,24 @@ export const Editor: FC<TEditorProps> = ({
     }
   };
 
+  const handleTextareaSelect = () => {
+    if (textareaRef.current) {
+      selectionRef.current = {
+        start: textareaRef.current.selectionStart,
+        end: textareaRef.current.selectionEnd,
+      };
+    }
+  };
+
+  const handleTextareaFocus = () => {
+    setIsTextareaFocused(true);
+    handleTextareaSelect();
+  };
+
+  const handleTextareaBlur = () => {
+    setIsTextareaFocused(false);
+  };
+
   const handleDelete = () => {
     setIsConfirmOpen(true);
   };
@@ -73,123 +91,59 @@ export const Editor: FC<TEditorProps> = ({
     }
   }, [note, onDeleteNote]);
 
-  const { transcript, listening, resetTranscript, browserSupportsSpeechRecognition } =
-    useSpeechRecognition();
-
-  const handleBeforeVoiceRecord = useCallback(() => {
-    if (listening) {
-      return;
-    }
-
-    const textarea = textareaRef.current;
-
-    // If textarea is focused, save current selection before starting voice recording, otherwise we lose it on button focus
-    if (textarea && document.activeElement === textarea) {
+  const handleBeforeVoiceStart = () => {
+    if (textareaRef.current) {
       selectionRef.current = {
-        start: textarea.selectionStart,
-        end: textarea.selectionEnd,
-      };
-    } else {
-      // If textarea is not focused, set selection to the end
-      const endPos = text.length;
-
-      selectionRef.current = {
-        start: endPos,
-        end: endPos,
+        start: textareaRef.current.selectionStart,
+        end: textareaRef.current.selectionEnd,
       };
     }
-  }, [text, listening]);
+  };
 
-  const handleVoiceRecord = useCallback(() => {
-    resetTranscript();
-    SpeechRecognition.startListening({
-      continuous: true,
-    });
-  }, [resetTranscript]);
-
-  const handleVoiceStop = useCallback(() => {
-    SpeechRecognition.stopListening();
-
-    if (!transcript.trim()) {
-      return;
-    }
-
-    const selection = selectionRef.current;
-
-    selectionRef.current = null;
-
-    setText((prevText) => {
-      let newText = prevText;
-      let newCursorPos = 0;
-
-      if (selection) {
-        // Existing text is selected or has custom cursor position
-        const { start, end } = selection;
-        const { text, endPosition } = insertWithSmartSpacing({
-          original: prevText,
-          insertText: transcript,
-          position: start,
-          endPosition: end,
-        });
-
-        newText = text;
-        newCursorPos = endPosition;
-      } else {
-        // If textarea lacks focus, append transcript to the end
-        newText = prevText + (prevText ? ' ' : '') + transcript;
-        newCursorPos = newText.length;
+  const handleVoiceStop = useCallback(
+    (transcript: string) => {
+      if (!transcript.trim() || !note) {
+        return;
       }
 
-      // Update the note with the new text
-      if (note) {
-        onUpdateNote(note.id, { text: newText });
-      }
+      setText((prevText) => {
+        let newText = prevText;
+        let newCursorPos = 0;
 
-      const textarea = textareaRef.current;
+        if (selectionRef.current) {
+          // Existing text is selected or has custom cursor position
+          const { start, end } = selectionRef.current;
+          const { text: updatedText, endPosition } = insertWithSmartSpacing({
+            original: prevText,
+            insertText: transcript,
+            position: start,
+            endPosition: end,
+          });
 
-      // Set cursor position after transcript is inserted
-      setTimeout(() => {
-        if (textarea) {
-          textarea.focus();
-          textarea.setSelectionRange(newCursorPos, newCursorPos);
+          newText = updatedText;
+          newCursorPos = endPosition;
+        } else {
+          // If textarea lacks focus, append transcript to the end
+          newText = prevText + (prevText ? ' ' : '') + transcript;
+          newCursorPos = newText.length;
         }
-      }, 0);
 
-      return newText;
-    });
-  }, [note, onUpdateNote, transcript]);
+        // Update the note with the new text
+        onUpdateNote(note.id, { text: newText });
 
-  // While Alt/Option is pressed, voice recording is in progress
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (
-        e.key === 'Alt' &&
-        !e.ctrlKey &&
-        !e.shiftKey &&
-        !e.metaKey &&
-        document.activeElement === textareaRef.current
-      ) {
-        handleBeforeVoiceRecord();
-        handleVoiceRecord();
-        // prevent default in case Alt would open menus
-        e.preventDefault();
-      }
-    };
+        // Set cursor position after transcript is inserted
+        setTimeout(() => {
+          if (textareaRef.current) {
+            textareaRef.current.focus();
+            textareaRef.current.setSelectionRange(newCursorPos, newCursorPos);
+          }
+        }, 0);
 
-    const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Alt' && document.activeElement === textareaRef.current) {
-        handleVoiceStop();
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [handleBeforeVoiceRecord, handleVoiceRecord, handleVoiceStop]);
+        return newText;
+      });
+    },
+    [note, onUpdateNote],
+  );
 
   if (!note) {
     return (
@@ -202,21 +156,13 @@ export const Editor: FC<TEditorProps> = ({
   return (
     <div className="h-full flex flex-col">
       <div className="flex justify-end items-center mb-4">
-        {browserSupportsSpeechRecognition && (
-          <>
-            <div className={clsx('recording-dot', { hidden: !listening })} />
+        <Dictaphone
+          isKeyDownReady={isTextareaFocused}
+          onStart={handleBeforeVoiceStart}
+          onStop={handleVoiceStop}
+        />
 
-            <Button
-              onClick={listening ? handleVoiceStop : handleVoiceRecord}
-              onMouseDown={handleBeforeVoiceRecord}
-              variant="secondary"
-            >
-              {listening ? 'Stop recording' : 'Record voice'}
-            </Button>
-          </>
-        )}
-
-        <Button onClick={handleDelete} variant="secondary">
+        <Button onClick={handleDelete} variant="primary">
           Delete
         </Button>
       </div>
@@ -236,8 +182,11 @@ export const Editor: FC<TEditorProps> = ({
         ref={textareaRef}
         value={text}
         onChange={handleTextChange}
+        onSelect={handleTextareaSelect}
+        onFocus={handleTextareaFocus}
+        onBlur={handleTextareaBlur}
         className="flex-1 w-full resize-none focus:outline-none focus:ring-0 focus:border-transparent"
-        placeholder="Start writing your note here..."
+        placeholder="Start writing your note here... Oh, and press Alt key to start voice recording"
       />
 
       <ConfirmDialog
@@ -252,5 +201,3 @@ export const Editor: FC<TEditorProps> = ({
     </div>
   );
 };
-
-Editor.displayName = 'Editor';

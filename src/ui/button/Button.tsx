@@ -23,7 +23,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     ref,
   ) => {
     const baseStyles =
-      'inline-flex items-center justify-center rounded-custom transition-colors focus:outline-none focus:ring-0 focus:ring-offset-0 focus:ring-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer border-0 focus:border-0 active:border-0';
+      'inline-flex items-center justify-center rounded-custom transition-colors focus:ring-2 focus:ring-offset-2 focus:ring-transparent disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer border-0 focus:border-0 active:border-0';
 
     const variantStyles = {
       primary: 'bg-accent text-white hover:bg-hover',

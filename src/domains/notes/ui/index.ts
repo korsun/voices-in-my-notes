@@ -1,3 +1,4 @@
 export { List, type TListHandle } from './List';
-export { Editor, type TEditorHandle } from './Editor';
+export { Editor } from './Editor';
 export { Layout } from './Layout';
+export { Dictaphone } from './Dictaphone';
