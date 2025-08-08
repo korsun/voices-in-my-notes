@@ -90,6 +90,8 @@ I aimed for an easy-to-use interface, so I dropped the “Edit” and “Save”
 
 The app should be keyboard-friendly: use Tab to navigate between elements and Enter to confirm actions. I also added voice recording via Alt/Option, because it works really well in WisprFlow, which I use daily.
 
+When voice recording is on, we restrict all other communication with the app. When the user switches to another tab or closes the app, the voice recording stops.
+
 All actions that cannot be undone should be confirmed by the user.
 
 The app should be mobile-friendly as well—but I deferred this due to time constraints.
