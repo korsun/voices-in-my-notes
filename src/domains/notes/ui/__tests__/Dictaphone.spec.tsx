@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import type { Mocked } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSpeechRecognition } from 'react-speech-recognition';
-import { Dictaphone } from '../Dictaphone';
+import { Dictaphone } from '../Dictaphone/Dictaphone';
 import { render } from '_infrastructure/test-utils/voiceRecordingTestUtils';
 
 // Type definitions for the mocked module
@@ -96,26 +96,53 @@ describe('Dictaphone', () => {
     expect(mockOnStart).toHaveBeenCalled();
     expect(mockStartListening).toHaveBeenCalledWith({
       continuous: true,
+      interimResults: true,
       language: 'en-US',
     });
   });
 
-  it('should stop recording when stop button is clicked', async () => {
+  it('should initiate soft stop when stop button is clicked', async () => {
+    // Mock the initial state with listening true and initial transcript
+    mockUseSpeechRecognition.mockReturnValue({
+      ...defaultSpeechRecognitionState,
+      listening: true,
+      transcript: 'test',
+    });
+
+    renderComponent();
+
+    // Simulate a change in transcript
     mockUseSpeechRecognition.mockReturnValue({
       ...defaultSpeechRecognitionState,
       listening: true,
       transcript: 'test transcript',
     });
 
-    renderComponent();
-
-    // Wait for the component to update with the new listening state
+    // Find and click the stop button
     const stopButton = await screen.findByRole('button', { name: /stop recording/i });
 
     await userEvent.click(stopButton);
 
-    expect(mockStopListening).toHaveBeenCalled();
+    // Verify the soft stop was initiated (but don't expect stopListening to be called directly yet)
+    expect(mockStopListening).not.toHaveBeenCalled();
+
+    // Simulate the transcript becoming stable (no change for idle period)
+    mockUseSpeechRecognition.mockReturnValue({
+      ...defaultSpeechRecognitionState,
+      listening: false,
+      transcript: 'test transcript',
+    });
+
+    // Wait for the idle timeout (700ms) to trigger the commit
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    });
+
+    // Verify the final transcript was committed
     expect(mockOnStop).toHaveBeenCalledWith('test transcript');
+
+    // Verify stopListening was eventually called
+    expect(mockStopListening).toHaveBeenCalled();
   });
 
   it('should change language when a different language is selected', async () => {
@@ -138,15 +165,17 @@ describe('Dictaphone', () => {
 
     expect(mockStartListening).toHaveBeenCalledWith({
       continuous: true,
+      interimResults: true,
       language: 'fr-FR',
     });
   });
 
   it('should handle keyboard events for starting and stopping recording', async () => {
-    // Set up the initial state with listening: false
+    // Initial state - not listening
     mockUseSpeechRecognition.mockReturnValue({
       ...defaultSpeechRecognitionState,
       listening: false,
+      transcript: '',
     });
 
     const { rerender } = renderComponent();
@@ -156,29 +185,51 @@ describe('Dictaphone', () => {
       fireEvent.keyDown(window, { key: 'Alt' });
     });
 
-    // Update the mock to simulate that we're now listening
+    // Update to show we're now listening with initial transcript
     mockUseSpeechRecognition.mockReturnValue({
       ...defaultSpeechRecognitionState,
       listening: true,
+      transcript: 'test',
     });
-
-    // Rerender with the new listening state
     rerender(<Dictaphone isKeyDownReady={true} onStart={mockOnStart} onStop={mockOnStop} />);
 
-    expect(mockOnStart).toHaveBeenCalled();
-    expect(mockStartListening).toHaveBeenCalled();
+    // Simulate transcript update while recording
+    mockUseSpeechRecognition.mockReturnValue({
+      ...defaultSpeechRecognitionState,
+      listening: true,
+      transcript: 'test transcript',
+    });
+    rerender(<Dictaphone isKeyDownReady={true} onStart={mockOnStart} onStop={mockOnStop} />);
 
-    // Reset the mocks to track the stop calls
-    mockOnStart.mockClear();
-    mockStartListening.mockClear();
+    expect(mockOnStart).toHaveBeenCalledTimes(1);
+    expect(mockStartListening).toHaveBeenCalledTimes(1);
 
     // Simulate Alt key up to stop recording
     await act(async () => {
       fireEvent.keyUp(window, { key: 'Alt' });
     });
 
-    // Verify stop was called
-    expect(mockStopListening).toHaveBeenCalled();
+    // Verify soft stop was initiated
+    expect(mockStopListening).not.toHaveBeenCalled();
+
+    // Simulate transcript becoming stable (no changes for idle period)
+    mockUseSpeechRecognition.mockReturnValue({
+      ...defaultSpeechRecognitionState,
+      listening: false,
+      transcript: 'test transcript',
+    });
+    rerender(<Dictaphone isKeyDownReady={true} onStart={mockOnStart} onStop={mockOnStop} />);
+
+    // Wait for idle timeout to complete
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 800));
+    });
+
+    // Verify the final transcript was committed
+    expect(mockOnStop).toHaveBeenCalledWith('test transcript');
+
+    // Verify stopListening was called after soft stop completes
+    expect(mockStopListening).toHaveBeenCalledTimes(1);
   });
 
   it('should not start recording when isKeyDownReady is false', async () => {

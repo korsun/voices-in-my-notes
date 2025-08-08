@@ -1,9 +1,9 @@
-import { type FC, useCallback, useEffect, useState } from 'react';
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import { type FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { clsx } from 'clsx';
 import { DropdownMenu } from 'radix-ui';
 import { Button } from 'ui';
 import { useVoiceRecording } from '_infrastructure/contexts';
+import { useSpeechRecognitionWithSoftStop } from './useSpeechRecognitionWithSoftStop';
 
 type TDictaphoneProps = {
   isKeyDownReady: boolean;
@@ -12,14 +12,20 @@ type TDictaphoneProps = {
 };
 
 export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onStop }) => {
+  const availableLanguages = useMemo(() => navigator.languages || ['en-US'], []);
+  const [selectedLanguage, setSelectedLanguage] = useState(availableLanguages[0]);
+
   const {
-    transcript,
     listening,
-    resetTranscript,
+    finishing,
+    start,
+    requestStop,
     browserSupportsSpeechRecognition,
-    browserSupportsContinuousListening,
     isMicrophoneAvailable,
-  } = useSpeechRecognition();
+  } = useSpeechRecognitionWithSoftStop({
+    language: selectedLanguage,
+    onCommit: onStop,
+  });
 
   const { toggleListening } = useVoiceRecording();
 
@@ -27,44 +33,22 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
     toggleListening(listening);
   }, [listening, toggleListening]);
 
-  const availableLanguages = navigator.languages || ['en-US'];
-  const [selectedLanguage, setSelectedLanguage] = useState(availableLanguages[0]);
-
   const handleBeforeVoiceRecord = useCallback(() => {
-    if (listening) {
-      return;
+    if (!listening && !finishing) {
+      onStart();
     }
+  }, [listening, finishing, onStart]);
 
-    onStart();
-  }, [listening, onStart]);
-
-  const handleVoiceRecord = useCallback(() => {
-    resetTranscript();
-    SpeechRecognition.startListening({
-      continuous: browserSupportsContinuousListening,
-      language: selectedLanguage,
-    });
-  }, [browserSupportsContinuousListening, resetTranscript, selectedLanguage]);
-
-  const handleVoiceStop = useCallback(() => {
-    SpeechRecognition.stopListening();
-
-    if (transcript.trim()) {
-      onStop(transcript);
-    }
-  }, [onStop, transcript]);
-
-  // Stop recording and commit transcript when tab becomes hidden
+  // Visibility/pagehide: request soft stop
   useEffect(() => {
     const onVisibility = () => {
-      if (document.visibilityState === 'hidden' && listening) {
-        handleVoiceStop();
+      if (document.visibilityState === 'hidden' && (listening || finishing)) {
+        requestStop();
       }
     };
-
     const onPageHide = () => {
-      if (listening) {
-        handleVoiceStop();
+      if (listening || finishing) {
+        requestStop();
       }
     };
 
@@ -75,25 +59,24 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
       document.removeEventListener('visibilitychange', onVisibility);
       window.removeEventListener('pagehide', onPageHide);
     };
-  }, [listening, handleVoiceStop]);
+  }, [listening, finishing, requestStop]);
 
-  // Handle keyboard shortcuts for voice recording
+  // Keyboard push-to-talk: Alt down/up
   useEffect(() => {
     if (!isMicrophoneAvailable || !isKeyDownReady) {
       return;
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Alt' && !e.ctrlKey && !e.shiftKey && !e.metaKey && !listening) {
+      if (e.key === 'Alt' && !e.ctrlKey && !e.shiftKey && !e.metaKey && !listening && !finishing) {
         handleBeforeVoiceRecord();
-        handleVoiceRecord();
+        start();
         e.preventDefault();
       }
     };
-
     const handleKeyUp = (e: KeyboardEvent) => {
-      if (e.key === 'Alt' && listening) {
-        handleVoiceStop();
+      if (e.key === 'Alt' && (listening || finishing)) {
+        requestStop();
       }
     };
 
@@ -105,12 +88,13 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
       window.removeEventListener('keyup', handleKeyUp);
     };
   }, [
-    handleBeforeVoiceRecord,
-    handleVoiceRecord,
-    handleVoiceStop,
     isMicrophoneAvailable,
     isKeyDownReady,
     listening,
+    finishing,
+    handleBeforeVoiceRecord,
+    start,
+    requestStop,
   ]);
 
   if (!browserSupportsSpeechRecognition) {
@@ -120,17 +104,17 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
   return (
     <div className="flex items-center mr-4">
       <Button
-        onClick={listening ? handleVoiceStop : handleVoiceRecord}
+        onClick={listening || finishing ? requestStop : start}
         onMouseDown={handleBeforeVoiceRecord}
         variant="secondary"
-        disabled={!isMicrophoneAvailable}
+        disabled={!isMicrophoneAvailable || finishing}
         className="mx-1"
       >
         <div className={clsx('recording-dot mr-4', { hidden: !listening })} />
-        {listening ? 'Stop recording' : 'Record voice'}
+        {finishing ? 'Finishing…' : listening ? 'Stop recording' : 'Record voice'}
       </Button>
 
-      {listening ? (
+      {listening || finishing ? (
         <Button variant="secondary" type="button" disabled className="mx-1">
           {selectedLanguage}
         </Button>
