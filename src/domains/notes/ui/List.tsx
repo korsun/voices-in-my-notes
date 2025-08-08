@@ -41,14 +41,16 @@ export const List = forwardRef<TListHandle, TListProps>(
           {!isLoading && notes.length === 0 ? (
             <div className="text-center text-gray2 heading-3">No notes yet 😔</div>
           ) : (
-            <ul className="flex flex-col gap-2">
+            <ul className="flex flex-col gap-2" role="listbox" aria-label="Notes list">
               {notes.map((note) => (
-                <li key={note.id} onClick={() => !isListening && onSelectNote(note)}>
+                <li key={note.id} role="option" aria-selected={selectedNoteId === note.id}>
                   <Card
                     title={note.title}
                     text={note.text}
                     isSelected={selectedNoteId === note.id}
                     updatedAt={note.updatedAt}
+                    onClick={() => !isListening && onSelectNote(note)}
+                    isDisabled={isListening}
                   />
                 </li>
               ))}

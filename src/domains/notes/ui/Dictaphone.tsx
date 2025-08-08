@@ -119,25 +119,25 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
 
   return (
     <div className="flex items-center mr-4">
-      <div className={clsx('recording-dot', { hidden: !listening })} />
-
       <Button
         onClick={listening ? handleVoiceStop : handleVoiceRecord}
         onMouseDown={handleBeforeVoiceRecord}
         variant="secondary"
         disabled={!isMicrophoneAvailable}
+        className="mx-1"
       >
+        <div className={clsx('recording-dot mr-4', { hidden: !listening })} />
         {listening ? 'Stop recording' : 'Record voice'}
       </Button>
 
       {listening ? (
-        <Button variant="secondary" type="button" disabled>
+        <Button variant="secondary" type="button" disabled className="mx-1">
           {selectedLanguage}
         </Button>
       ) : (
         <DropdownMenu.Root>
           <DropdownMenu.Trigger asChild>
-            <Button variant="secondary" type="button">
+            <Button variant="secondary" type="button" className="mx-1">
               {selectedLanguage}
             </Button>
           </DropdownMenu.Trigger>
