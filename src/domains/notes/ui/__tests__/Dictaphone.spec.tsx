@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event';
 import type { Mocked } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { useSpeechRecognition } from 'react-speech-recognition';
-import { Dictaphone } from '../Dictaphone';
+import { Dictaphone } from '../Dictaphone/Dictaphone';
 import { render } from '_infrastructure/test-utils/voiceRecordingTestUtils';
 
 // Type definitions for the mocked module
