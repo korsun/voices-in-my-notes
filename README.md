@@ -1,5 +1,7 @@
 # Voices in my notes
 
+https://voices-sand.vercel.app/
+
 ## How it was designed
 
 ### Paper / mind mapping stage
