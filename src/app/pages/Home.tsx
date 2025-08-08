@@ -110,27 +110,25 @@ export function Home() {
   };
 
   return (
-    <>
-      <Layout
-        leftPanel={
-          <List
-            ref={listRef}
-            notes={notes}
-            selectedNoteId={selectedNote?.id || null}
-            onSelectNote={handleSelectNote}
-            onCreateNote={handleCreateNote}
-            isLoading={isLoading}
-          />
-        }
-        rightPanel={
-          <Editor
-            note={selectedNote}
-            onUpdateNote={handleUpdateNote}
-            onDeleteNote={handleDeleteClick}
-            autoFocusTitle={isNewNote}
-          />
-        }
-      />
-    </>
+    <Layout
+      leftPanel={
+        <List
+          ref={listRef}
+          notes={notes}
+          selectedNoteId={selectedNote?.id || null}
+          onSelectNote={handleSelectNote}
+          onCreateNote={handleCreateNote}
+          isLoading={isLoading}
+        />
+      }
+      rightPanel={
+        <Editor
+          note={selectedNote}
+          onUpdateNote={handleUpdateNote}
+          onDeleteNote={handleDeleteClick}
+          autoFocusTitle={isNewNote}
+        />
+      }
+    />
   );
 }

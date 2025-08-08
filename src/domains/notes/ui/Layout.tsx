@@ -7,9 +7,9 @@ export type TLayoutProps = {
 
 export function Layout({ leftPanel, rightPanel }: TLayoutProps) {
   return (
-    <main className="flex h-screen">
-      <div className="w-[330px] border-r border-gray3 overflow-y-auto">{leftPanel}</div>
-      <div className="flex-1 overflow-y-auto p-6 pt-4">{rightPanel}</div>
-    </main>
+    <div className="flex h-screen min-w-[700px]">
+      <aside className="w-[330px] border-r border-gray3 overflow-y-auto">{leftPanel}</aside>
+      <main className="flex-1 overflow-y-auto p-6 pt-4">{rightPanel}</main>
+    </div>
   );
 }
