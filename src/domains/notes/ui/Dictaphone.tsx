@@ -54,6 +54,29 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
     }
   }, [onStop, transcript]);
 
+  // Stop recording and commit transcript when tab becomes hidden
+  useEffect(() => {
+    const onVisibility = () => {
+      if (document.visibilityState === 'hidden' && listening) {
+        handleVoiceStop();
+      }
+    };
+
+    const onPageHide = () => {
+      if (listening) {
+        handleVoiceStop();
+      }
+    };
+
+    document.addEventListener('visibilitychange', onVisibility);
+    window.addEventListener('pagehide', onPageHide);
+
+    return () => {
+      document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, [listening, handleVoiceStop]);
+
   // Handle keyboard shortcuts for voice recording
   useEffect(() => {
     if (!isMicrophoneAvailable || !isKeyDownReady) {
@@ -96,40 +119,46 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
 
   return (
     <div className="flex items-center mr-4">
-      <div className={clsx('recording-dot', { hidden: !listening })} />
-
       <Button
         onClick={listening ? handleVoiceStop : handleVoiceRecord}
         onMouseDown={handleBeforeVoiceRecord}
         variant="secondary"
         disabled={!isMicrophoneAvailable}
+        className="mx-1"
       >
+        <div className={clsx('recording-dot mr-4', { hidden: !listening })} />
         {listening ? 'Stop recording' : 'Record voice'}
       </Button>
 
-      <DropdownMenu.Root>
-        <DropdownMenu.Trigger asChild>
-          <Button variant="secondary" type="button">
-            {selectedLanguage}
-          </Button>
-        </DropdownMenu.Trigger>
-        <DropdownMenu.Content
-          className="max-h-60 overflow-y-auto bg-white rounded-custom shadow"
-          sideOffset={5}
-        >
-          {availableLanguages.map((lang) => (
-            <DropdownMenu.Item
-              key={lang}
-              className={clsx('cursor-pointer px-4 py-2 hover:bg-gray3', {
-                'bg-gray4': lang === selectedLanguage,
-              })}
-              onSelect={() => setSelectedLanguage(lang)}
-            >
-              {lang}
-            </DropdownMenu.Item>
-          ))}
-        </DropdownMenu.Content>
-      </DropdownMenu.Root>
+      {listening ? (
+        <Button variant="secondary" type="button" disabled className="mx-1">
+          {selectedLanguage}
+        </Button>
+      ) : (
+        <DropdownMenu.Root>
+          <DropdownMenu.Trigger asChild>
+            <Button variant="secondary" type="button" className="mx-1">
+              {selectedLanguage}
+            </Button>
+          </DropdownMenu.Trigger>
+          <DropdownMenu.Content
+            className="max-h-60 overflow-y-auto bg-white rounded-custom shadow"
+            sideOffset={5}
+          >
+            {availableLanguages.map((lang) => (
+              <DropdownMenu.Item
+                key={lang}
+                className={clsx('cursor-pointer px-4 py-2 hover:bg-gray3', {
+                  'bg-gray4': lang === selectedLanguage,
+                })}
+                onSelect={() => setSelectedLanguage(lang)}
+              >
+                {lang}
+              </DropdownMenu.Item>
+            ))}
+          </DropdownMenu.Content>
+        </DropdownMenu.Root>
+      )}
     </div>
   );
 };

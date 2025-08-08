@@ -87,21 +87,21 @@ export const Editor: FC<TEditorProps> = ({
     setIsConfirmOpen(true);
   };
 
-  const handleConfirmDelete = useCallback(() => {
+  const handleConfirmDelete = () => {
     if (note) {
       onDeleteNote(note.id);
       setIsConfirmOpen(false);
     }
-  }, [note, onDeleteNote]);
+  };
 
-  const handleBeforeVoiceStart = () => {
+  const handleBeforeVoiceStart = useCallback(() => {
     if (textareaRef.current) {
       selectionRef.current = {
         start: textareaRef.current.selectionStart,
         end: textareaRef.current.selectionEnd,
       };
     }
-  };
+  }, []);
 
   const handleVoiceStop = useCallback(
     (transcript: string) => {
