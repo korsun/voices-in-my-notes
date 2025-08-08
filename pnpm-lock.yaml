@@ -23,8 +23,8 @@ importers:
         specifier: ^19.1.0
         version: 19.1.0(react@19.1.0)
       react-speech-recognition:
-        specifier: ^4.0.1
-        version: 4.0.1(react@19.1.0)
+        specifier: 4.0.0
+        version: 4.0.0(react@19.1.0)
       sonner:
         specifier: ^2.0.7
         version: 2.0.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -3603,12 +3603,6 @@ packages:
       }
     engines: { node: '>=10' }
 
-  lodash.debounce@4.0.8:
-    resolution:
-      {
-        integrity: sha512-FT1yDzDYEoYWhnSGnpE/4Kj1fLZkDFyqRb7fNt6FdYOSxlUWAtp42Eh6Wb0rGIv/m9Bgo7x4GhQbm5Ys4SG5ow==,
-      }
-
   lodash.merge@4.6.2:
     resolution:
       {
@@ -4092,10 +4086,10 @@ packages:
       '@types/react':
         optional: true
 
-  react-speech-recognition@4.0.1:
+  react-speech-recognition@4.0.0:
     resolution:
       {
-        integrity: sha512-0fIqzLtfY8vuYA6AmJVK7qiabZx0oFKOO+rbiBgFI3COWVGREy0A+gdU16hWXmFebeyrI8JsOLYsWk6WaHUXRw==,
+        integrity: sha512-hz1OsRhjAW70rOMVXN84PR+1L2I1j8xS1TXpwpd4vlDaRY9i/LbAaxEklqscgObECTTuyxNeGBdVdcq/pX3bqQ==,
       }
     peerDependencies:
       react: '>=16.8.0'
@@ -7276,8 +7270,6 @@ snapshots:
     dependencies:
       p-locate: 5.0.0
 
-  lodash.debounce@4.0.8: {}
-
   lodash.merge@4.6.2: {}
 
   lodash@4.17.21: {}
@@ -7549,9 +7541,8 @@ snapshots:
     optionalDependencies:
       '@types/react': 19.1.8
 
-  react-speech-recognition@4.0.1(react@19.1.0):
+  react-speech-recognition@4.0.0(react@19.1.0):
     dependencies:
-      lodash.debounce: 4.0.8
       react: 19.1.0
 
   react-style-singleton@2.2.3(@types/react@19.1.8)(react@19.1.0):
