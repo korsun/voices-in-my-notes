@@ -95,3 +95,9 @@ When voice recording is on, we restrict all other communication with the app. Wh
 All actions that cannot be undone should be confirmed by the user.
 
 The app should be mobile-friendly as well—but I deferred this due to time constraints.
+
+### Challenges
+
+- Soft-stop implemetation definitely sucked some of my blood. In continuous mode, the speech recognition API swallows the last word, unless you're willing to stop the recording ±800ms after you pronounce the last word. Nevertheless, it should have been fixed, and it is fixed.
+
+- `react-speech-recognition` v4.0.1 doesn't listen to speech in production bundle. There are no visible changes that could lead to such behavior. I'm willing to debug and open an issue. Luckily, v4.0.0 still works.
