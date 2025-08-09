@@ -5,6 +5,6 @@ type VoiceRecordingContextType = {
   toggleListening: (value: boolean) => void;
 };
 
-export const VoiceRecordingContext = createContext<VoiceRecordingContextType | undefined>(
-  undefined,
-);
+export const VoiceRecordingContext = createContext<
+  VoiceRecordingContextType | undefined
+>(undefined);

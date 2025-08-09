@@ -54,7 +54,8 @@ export function insertWithSmartSpacing({
   }
 
   const newText = `${before}${spaceBefore}${insertText}${spaceAfter}${after}`;
-  const newEndPosition = position + spaceBefore.length + insertText.length + spaceAfter.length;
+  const newEndPosition =
+    position + spaceBefore.length + insertText.length + spaceAfter.length;
 
   return { text: newText, endPosition: newEndPosition };
 }

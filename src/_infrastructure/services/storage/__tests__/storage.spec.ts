@@ -1,6 +1,5 @@
-import { beforeEach, describe, expect, it } from 'vitest';
-
 import * as idbKeyval from 'idb-keyval';
+import { beforeEach, describe, expect, it } from 'vitest';
 import { createStorage } from '../';
 
 const storage = createStorage();
@@ -81,7 +80,9 @@ describe('createStorage', () => {
       delete (globalThis as Record<string, unknown>).indexedDB;
       localStorage.setItem('key', JSON.stringify('old'));
 
-      const result = await storage.update('key', (old) => (old ? `${old}-updated` : 'updated'));
+      const result = await storage.update('key', (old) =>
+        old ? `${old}-updated` : 'updated',
+      );
 
       expect(result).toBe('old-updated');
       expect(localStorage.getItem('key')).toBe(JSON.stringify('old-updated'));

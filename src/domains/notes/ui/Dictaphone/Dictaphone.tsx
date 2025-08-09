@@ -1,8 +1,8 @@
-import { type FC, useCallback, useEffect, useMemo, useState } from 'react';
+import { useVoiceRecording } from '_infrastructure/contexts';
 import { clsx } from 'clsx';
 import { DropdownMenu } from 'radix-ui';
+import { type FC, useCallback, useEffect, useMemo, useState } from 'react';
 import { Button } from 'ui';
-import { useVoiceRecording } from '_infrastructure/contexts';
 import { useSpeechRecognitionWithSoftStop } from './useSpeechRecognitionWithSoftStop';
 
 type TDictaphoneProps = {
@@ -11,9 +11,18 @@ type TDictaphoneProps = {
   onStop: (transcript: string) => void;
 };
 
-export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onStop }) => {
-  const availableLanguages = useMemo(() => navigator.languages || ['en-US'], []);
-  const [selectedLanguage, setSelectedLanguage] = useState(availableLanguages[0]);
+export const Dictaphone: FC<TDictaphoneProps> = ({
+  isKeyDownReady,
+  onStart,
+  onStop,
+}) => {
+  const availableLanguages = useMemo(
+    () => navigator.languages || ['en-US'],
+    [],
+  );
+  const [selectedLanguage, setSelectedLanguage] = useState(
+    availableLanguages[0],
+  );
 
   const {
     listening,
@@ -68,7 +77,14 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
     }
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Alt' && !e.ctrlKey && !e.shiftKey && !e.metaKey && !listening && !finishing) {
+      if (
+        e.key === 'Alt' &&
+        !e.ctrlKey &&
+        !e.shiftKey &&
+        !e.metaKey &&
+        !listening &&
+        !finishing
+      ) {
         handleBeforeVoiceRecord();
         start();
         e.preventDefault();
@@ -111,7 +127,11 @@ export const Dictaphone: FC<TDictaphoneProps> = ({ isKeyDownReady, onStart, onSt
         className="mx-1"
       >
         <div className={clsx('recording-dot mr-4', { hidden: !listening })} />
-        {finishing ? 'Finishing…' : listening ? 'Stop recording' : 'Record voice'}
+        {finishing
+          ? 'Finishing…'
+          : listening
+            ? 'Stop recording'
+            : 'Record voice'}
       </Button>
 
       {listening || finishing ? (

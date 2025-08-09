@@ -1,17 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import type { TNote } from 'domains/notes/models';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { Home } from '../Home';
 import '@testing-library/jest-dom';
 import { render } from '_infrastructure/test-utils/voiceRecordingTestUtils';
 
 // Mock the API functions with proper typing
-const { mockedGetNotes, mockedCreateNote, mockedUpdateNote, mockedRemoveNote } = vi.hoisted(() => ({
-  mockedGetNotes: vi.fn(),
-  mockedCreateNote: vi.fn(),
-  mockedUpdateNote: vi.fn(),
-  mockedRemoveNote: vi.fn(),
-}));
+const { mockedGetNotes, mockedCreateNote, mockedUpdateNote, mockedRemoveNote } =
+  vi.hoisted(() => ({
+    mockedGetNotes: vi.fn(),
+    mockedCreateNote: vi.fn(),
+    mockedUpdateNote: vi.fn(),
+    mockedRemoveNote: vi.fn(),
+  }));
 
 // Mock the API functions
 vi.mock('domains/notes/api', () => ({
@@ -41,7 +42,9 @@ describe('Home Page', () => {
       expect(listEmptyState).toBeInTheDocument();
 
       // Check that the Editor shows the 'Create a note or choose one' message
-      const editorEmptyState = await screen.findByText('Create a note or choose one 👋');
+      const editorEmptyState = await screen.findByText(
+        'Create a note or choose one 👋',
+      );
 
       expect(editorEmptyState).toBeInTheDocument();
 
@@ -207,7 +210,10 @@ describe('Home Page', () => {
       await screen.findByText('Existing Note');
 
       // Set up the second mock for getNotes that includes the new note
-      mockedGetNotes.mockResolvedValueOnce([...mockNotes, ['new-note-id', newNote]]);
+      mockedGetNotes.mockResolvedValueOnce([
+        ...mockNotes,
+        ['new-note-id', newNote],
+      ]);
 
       // Act: Click the create note button
       const createButton = screen.getByRole('button', { name: /create note/i });
@@ -276,7 +282,8 @@ describe('Home Page', () => {
       // Helper function to extract updates from the mock call
       const getUpdatesFromMock = (callIndex: number) => {
         const call = mockedUpdateNote.mock.calls[callIndex];
-        const updates = typeof call[1] === 'function' ? call[1](initialNote) : call[1];
+        const updates =
+          typeof call[1] === 'function' ? call[1](initialNote) : call[1];
 
         return updates;
       };
@@ -374,7 +381,9 @@ describe('Home Page', () => {
 
       expect(dialog).toBeInTheDocument();
       expect(screen.getByText('Delete Note')).toBeInTheDocument();
-      expect(screen.getByText(/are you sure you want to delete this note/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/are you sure you want to delete this note/i),
+      ).toBeInTheDocument();
     });
 
     it('should not delete note when deletion is cancelled', async () => {
@@ -408,7 +417,9 @@ describe('Home Page', () => {
       fireEvent.click(deleteButton);
 
       // Find and click the cancel button
-      const cancelButton = await screen.findByRole('button', { name: /cancel/i });
+      const cancelButton = await screen.findByRole('button', {
+        name: /cancel/i,
+      });
 
       fireEvent.click(cancelButton);
 
@@ -463,7 +474,9 @@ describe('Home Page', () => {
       fireEvent.click(deleteButton);
 
       // Find and click the confirm button
-      const confirmButton = await screen.findByRole('button', { name: 'Delete' });
+      const confirmButton = await screen.findByRole('button', {
+        name: 'Delete',
+      });
 
       fireEvent.click(confirmButton);
 
@@ -485,8 +498,12 @@ describe('Home Page', () => {
       expect(card).not.toHaveClass('bg-white');
 
       // The editor should show the remaining note's content
-      expect(await screen.findByDisplayValue('Another Note')).toBeInTheDocument();
-      expect(await screen.findByDisplayValue('This note will remain')).toBeInTheDocument();
+      expect(
+        await screen.findByDisplayValue('Another Note'),
+      ).toBeInTheDocument();
+      expect(
+        await screen.findByDisplayValue('This note will remain'),
+      ).toBeInTheDocument();
 
       // Assert that the dialog is closed
       expect(screen.queryByRole('dialog')).not.toBeInTheDocument();

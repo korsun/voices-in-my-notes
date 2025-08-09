@@ -66,8 +66,8 @@ describe('withStorageFallback', () => {
       },
     });
 
-    await expect(withStorageFallback<string>(undefined, undefined)).rejects.toThrowError(
-      'No IndexedDB and no localStorage.',
-    );
+    await expect(
+      withStorageFallback<string>(undefined, undefined),
+    ).rejects.toThrowError('No IndexedDB and no localStorage.');
   });
 });

@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('uuid', () => ({ v4: () => 'mock-id' }));
+
 import { createNote, getNoteById, getNotes, removeNote, updateNote } from '..';
 import { notesStorage } from '../const';
 

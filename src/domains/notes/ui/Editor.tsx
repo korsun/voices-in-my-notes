@@ -1,10 +1,10 @@
-import { type FC, useCallback, useEffect, useRef, useState } from 'react';
-import { useDebouncedCallback } from 'use-debounce';
-import type { TNote } from '../models';
-import { Button, ConfirmDialog } from 'ui';
-import { insertWithSmartSpacing } from '../helpers';
-import { Dictaphone } from '.';
 import { useVoiceRecording } from '_infrastructure/contexts';
+import { type FC, useCallback, useEffect, useRef, useState } from 'react';
+import { Button, ConfirmDialog } from 'ui';
+import { useDebouncedCallback } from 'use-debounce';
+import { insertWithSmartSpacing } from '../helpers';
+import type { TNote } from '../models';
+import { Dictaphone } from '.';
 
 type TEditorProps = {
   note: TNote | null;
@@ -39,11 +39,14 @@ export const Editor: FC<TEditorProps> = ({
     if (autoFocusTitle && titleRef.current) {
       titleRef.current.focus();
     }
-  }, [autoFocusTitle, note?.id]);
+  }, [autoFocusTitle]);
 
-  const debouncedUpdate = useDebouncedCallback((id: string, updates: Partial<TNote>) => {
-    onUpdateNote(id, updates);
-  }, 500);
+  const debouncedUpdate = useDebouncedCallback(
+    (id: string, updates: Partial<TNote>) => {
+      onUpdateNote(id, updates);
+    },
+    500,
+  );
 
   const handleTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newTitle = e.target.value;
@@ -178,7 +181,6 @@ export const Editor: FC<TEditorProps> = ({
         className="heading-2 w-full focus:outline-none overflow-hidden text-ellipsis whitespace-nowrap mb-6"
         placeholder="Note title"
         ref={titleRef}
-        autoFocus={autoFocusTitle}
       />
 
       <textarea

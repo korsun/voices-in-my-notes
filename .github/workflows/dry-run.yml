@@ -3,7 +3,7 @@ name: Dry-Run
 on:
   push:
     branches:
-      - '**'
+      - "**"
 
 jobs:
   build:
@@ -23,13 +23,13 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: 'pnpm'
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm lint
+        run: pnpm lint:ci
 
       - name: Build client
         run: pnpm build

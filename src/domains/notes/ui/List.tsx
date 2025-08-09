@@ -1,7 +1,7 @@
+import { useVoiceRecording } from '_infrastructure/contexts';
+import type { TNote } from 'domains/notes/models';
 import { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Button, Card } from 'ui';
-import type { TNote } from 'domains/notes/models';
-import { useVoiceRecording } from '_infrastructure/contexts';
 
 type TListProps = {
   notes: TNote[];
@@ -32,18 +32,27 @@ export const List = forwardRef<TListHandle, TListProps>(
     return (
       <div className="h-full flex flex-col">
         <div className="p-4 border-b border-gray3">
-          <Button onClick={onCreateNote} variant="primary" fullWidth disabled={isListening}>
+          <Button
+            onClick={onCreateNote}
+            variant="primary"
+            fullWidth
+            disabled={isListening}
+          >
             Create note
           </Button>
         </div>
         <div ref={listRef} className="flex-1 overflow-y-auto p-4">
-          {isLoading && <div className="p-4 text-center text-gray3">Loading...</div>}
+          {isLoading && (
+            <div className="p-4 text-center text-gray3">Loading...</div>
+          )}
           {!isLoading && notes.length === 0 ? (
-            <div className="text-center text-gray2 heading-3">No notes yet 😔</div>
+            <div className="text-center text-gray2 heading-3">
+              No notes yet 😔
+            </div>
           ) : (
-            <ul className="flex flex-col gap-2" role="listbox" aria-label="Notes list">
+            <ul className="flex flex-col gap-2" aria-label="Notes list">
               {notes.map((note) => (
-                <li key={note.id} aria-selected={selectedNoteId === note.id}>
+                <li key={note.id}>
                   <Card
                     title={note.title}
                     text={note.text}

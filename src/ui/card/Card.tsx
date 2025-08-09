@@ -1,5 +1,5 @@
-import { type FC, memo } from 'react';
 import { clsx } from 'clsx';
+import { type FC, memo } from 'react';
 
 type TCardProps = {
   title: string;
@@ -11,7 +11,14 @@ type TCardProps = {
 };
 
 export const Card: FC<TCardProps> = memo(
-  ({ title, text, isSelected = false, updatedAt, onClick, isDisabled = false }) => {
+  ({
+    title,
+    text,
+    isSelected = false,
+    updatedAt,
+    onClick,
+    isDisabled = false,
+  }) => {
     const handleKeyDown = (e: React.KeyboardEvent) => {
       if (isDisabled) {
         return;
