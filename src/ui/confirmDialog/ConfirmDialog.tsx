@@ -26,7 +26,9 @@ export function ConfirmDialog({
         <Dialog.Overlay className="fixed inset-0 bg-primary/50" />
         <Dialog.Content className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-custom w-[90vw] max-w-md">
           <Dialog.Title className="heading-2 mb-4">{title}</Dialog.Title>
-          <Dialog.Description className="mb-6">{description}</Dialog.Description>
+          <Dialog.Description className="mb-6">
+            {description}
+          </Dialog.Description>
 
           <div className="flex justify-end gap-3">
             <Button variant="secondary" onClick={() => onOpenChange(false)}>

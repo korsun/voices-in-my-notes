@@ -1,3 +1,2 @@
 pnpm format
-pnpm lint --fix --max-warnings=0
 git add .

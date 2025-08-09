@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import SpeechRecognition, { useSpeechRecognition } from 'react-speech-recognition';
+import SpeechRecognition, {
+  useSpeechRecognition,
+} from 'react-speech-recognition';
 
 type Options = {
   language: string;
@@ -65,7 +67,13 @@ export const useSpeechRecognitionWithSoftStop = ({
       interimResults: true,
       language,
     });
-  }, [browserSupportsContinuousListening, continuous, language, resetTranscript, finishing]);
+  }, [
+    browserSupportsContinuousListening,
+    continuous,
+    language,
+    resetTranscript,
+    finishing,
+  ]);
 
   // Request soft stop: wait for idle or hard cap, then stop + commit
   const requestStop = useCallback(() => {
@@ -123,7 +131,7 @@ export const useSpeechRecognitionWithSoftStop = ({
         idleTimerRef.current = null;
       }
     };
-  }, [transcript, finishing, stopIdleMs, onCommit, clearTimers]);
+  }, [finishing, stopIdleMs, onCommit, clearTimers]);
 
   return {
     transcript,

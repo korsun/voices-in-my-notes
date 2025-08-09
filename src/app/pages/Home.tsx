@@ -1,10 +1,16 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
-import { Editor, Layout, List, type TListHandle } from 'domains/notes/ui';
-import { createNote, getNotes, removeNote, updateNote } from 'domains/notes/api';
-import type { TNote } from 'domains/notes/models';
 import { onError } from '_infrastructure/helpers';
+import {
+  createNote,
+  getNotes,
+  removeNote,
+  updateNote,
+} from 'domains/notes/api';
+import type { TNote } from 'domains/notes/models';
+import { Editor, Layout, List, type TListHandle } from 'domains/notes/ui';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-const sortByDate = (a: TNote, b: TNote) => b.updatedAt.localeCompare(a.updatedAt);
+const sortByDate = (a: TNote, b: TNote) =>
+  b.updatedAt.localeCompare(a.updatedAt);
 
 export function Home() {
   const [notes, setNotes] = useState<TNote[]>([]);
@@ -13,6 +19,7 @@ export function Home() {
   const listRef = useRef<TListHandle>(null);
   const [isNewNote, setIsNewNote] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: Card render will break
   const loadNotes = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -31,7 +38,6 @@ export function Home() {
     } finally {
       setIsLoading(false);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -70,12 +76,16 @@ export function Home() {
 
       setNotes((prevNotes) =>
         prevNotes
-          .map((note) => (note.id === id ? { ...note, ...updates, updatedAt: now } : note))
+          .map((note) =>
+            note.id === id ? { ...note, ...updates, updatedAt: now } : note,
+          )
           .sort(sortByDate),
       );
 
       if (selectedNote?.id === id) {
-        setSelectedNote((prev) => (prev ? { ...prev, ...updates, updatedAt: now } : null));
+        setSelectedNote((prev) =>
+          prev ? { ...prev, ...updates, updatedAt: now } : null,
+        );
       }
     } catch (error) {
       onError(error, 'Failed to update note');

@@ -1,10 +1,10 @@
 import { act, fireEvent, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { render } from '_infrastructure/test-utils/voiceRecordingTestUtils';
+import { useSpeechRecognition } from 'react-speech-recognition';
 import type { Mocked } from 'vitest';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { useSpeechRecognition } from 'react-speech-recognition';
 import { Dictaphone } from '../Dictaphone/Dictaphone';
-import { render } from '_infrastructure/test-utils/voiceRecordingTestUtils';
 
 // Type definitions for the mocked module
 type SpeechRecognitionModule = {
@@ -42,8 +42,12 @@ describe('Dictaphone', () => {
   const mockOnStart = vi.fn();
   const mockOnStop = vi.fn();
   const mockUseSpeechRecognition = vi.mocked(useSpeechRecognition);
-  const mockStartListening = vi.mocked(mockSpeechRecognition.default.startListening);
-  const mockStopListening = vi.mocked(mockSpeechRecognition.default.stopListening);
+  const mockStartListening = vi.mocked(
+    mockSpeechRecognition.default.startListening,
+  );
+  const mockStopListening = vi.mocked(
+    mockSpeechRecognition.default.stopListening,
+  );
 
   const defaultSpeechRecognitionState = {
     transcript: '',
@@ -63,7 +67,12 @@ describe('Dictaphone', () => {
 
   const renderComponent = (props = {}) => {
     return render(
-      <Dictaphone isKeyDownReady={true} onStart={mockOnStart} onStop={mockOnStop} {...props} />,
+      <Dictaphone
+        isKeyDownReady={true}
+        onStart={mockOnStart}
+        onStop={mockOnStop}
+        {...props}
+      />,
       { initialListeningState: false },
     );
   };
@@ -82,7 +91,9 @@ describe('Dictaphone', () => {
   it('should render record button and language selector', () => {
     renderComponent();
 
-    expect(screen.getByRole('button', { name: /record voice/i })).toBeInTheDocument();
+    expect(
+      screen.getByRole('button', { name: /record voice/i }),
+    ).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /en-US/i })).toBeInTheDocument();
   });
 
@@ -119,7 +130,9 @@ describe('Dictaphone', () => {
     });
 
     // Find and click the stop button
-    const stopButton = await screen.findByRole('button', { name: /stop recording/i });
+    const stopButton = await screen.findByRole('button', {
+      name: /stop recording/i,
+    });
 
     await userEvent.click(stopButton);
 
@@ -191,7 +204,13 @@ describe('Dictaphone', () => {
       listening: true,
       transcript: 'test',
     });
-    rerender(<Dictaphone isKeyDownReady={true} onStart={mockOnStart} onStop={mockOnStop} />);
+    rerender(
+      <Dictaphone
+        isKeyDownReady={true}
+        onStart={mockOnStart}
+        onStop={mockOnStop}
+      />,
+    );
 
     // Simulate transcript update while recording
     mockUseSpeechRecognition.mockReturnValue({
@@ -199,7 +218,13 @@ describe('Dictaphone', () => {
       listening: true,
       transcript: 'test transcript',
     });
-    rerender(<Dictaphone isKeyDownReady={true} onStart={mockOnStart} onStop={mockOnStop} />);
+    rerender(
+      <Dictaphone
+        isKeyDownReady={true}
+        onStart={mockOnStart}
+        onStop={mockOnStop}
+      />,
+    );
 
     expect(mockOnStart).toHaveBeenCalledTimes(1);
     expect(mockStartListening).toHaveBeenCalledTimes(1);
@@ -218,7 +243,13 @@ describe('Dictaphone', () => {
       listening: false,
       transcript: 'test transcript',
     });
-    rerender(<Dictaphone isKeyDownReady={true} onStart={mockOnStart} onStop={mockOnStop} />);
+    rerender(
+      <Dictaphone
+        isKeyDownReady={true}
+        onStart={mockOnStart}
+        onStop={mockOnStop}
+      />,
+    );
 
     // Wait for idle timeout to complete
     await act(async () => {

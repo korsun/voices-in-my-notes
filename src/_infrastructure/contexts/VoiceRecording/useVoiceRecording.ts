@@ -6,7 +6,9 @@ export const useVoiceRecording = () => {
   const context = useContext(VoiceRecordingContext);
 
   if (context === undefined) {
-    throw new Error('useVoiceRecording must be used within a VoiceRecordingProvider');
+    throw new Error(
+      'useVoiceRecording must be used within a VoiceRecordingProvider',
+    );
   }
 
   return context;
